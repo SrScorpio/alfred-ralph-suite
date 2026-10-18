@@ -6,6 +6,18 @@ All notable changes to Ralph Suite are documented here.
 
 ## [Unreleased]
 
+## [1.12.2] - 2026-10-18
+
+### Added
+- El importador de planes entiende JSON con `issues`, pasos numerados con `#` (`### 1. Titulo`), `## Paso 1: Titulo` y subtitulos dentro de un apartado Steps.
+
+### Fixed
+- `AGENTS.md` y `.github/copilot-instructions.md` mandan a `docs/`, no a `plans/`, que queda como historico. Ya no se detiene la tarea si falta un fichero de contexto.
+- El aviso de importacion explica los formatos aceptados en vez de "Could not parse tasks from the plan."
+- Los tests cargan el TypeScript, no el JavaScript compilado que quedaba junto a las fuentes.
+- Acentos rotos en `activate.ts`.
+
+
 ## [1.12.1] - 2026-10-18
 
 ### Added

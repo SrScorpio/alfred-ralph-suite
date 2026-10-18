@@ -1,0 +1,115 @@
+const Module = require('module');
+const originalLoad = Module._load;
+
+// Singleton mock — every import of 'vscode' gets the SAME object so that
+// tests can spy/mutate vscode.commands.executeCommand etc. and the change
+// is observed by modules that captured their reference at import time.
+const noopDisposable = { dispose: () => undefined };
+const configuration = {
+	get: (_key, fallback) => fallback,
+	update: async () => undefined,
+	inspect: () => ({ workspaceValue: undefined, globalValue: undefined }),
+};
+
+const commandsApi = {
+	executeCommand: async () => undefined,
+	registerCommand: () => noopDisposable,
+};
+
+const envApi = {
+	language: 'en',
+	locale: 'en',
+	clipboard: { writeText: async () => undefined },
+};
+
+const windowApi = {
+	activeTextEditor: undefined,
+	createOutputChannel: () => ({
+		appendLine: () => undefined,
+		show: () => undefined,
+		dispose: () => undefined,
+	}),
+	createStatusBarItem: () => ({
+		text: '',
+		tooltip: '',
+		command: '',
+		show: () => undefined,
+		dispose: () => undefined,
+	}),
+	createWebviewPanel: () => ({
+		title: '',
+		webview: {
+			html: '',
+			options: {},
+			postMessage: async () => true,
+			onDidReceiveMessage: () => noopDisposable,
+		},
+		onDidDispose: () => noopDisposable,
+		reveal: () => undefined,
+	}),
+	showErrorMessage: async () => undefined,
+	showInformationMessage: async () => undefined,
+	showInputBox: async () => undefined,
+	showOpenDialog: async () => undefined,
+	showQuickPick: async () => undefined,
+	showTextDocument: async () => undefined,
+	showWarningMessage: async () => undefined,
+	registerTreeDataProvider: () => noopDisposable,
+};
+
+const workspaceApi = {
+	createFileSystemWatcher: () => ({
+		onDidChange: () => noopDisposable,
+		onDidCreate: () => noopDisposable,
+		onDidDelete: () => noopDisposable,
+		dispose: () => undefined,
+	}),
+	getConfiguration: () => configuration,
+	openTextDocument: async () => ({}),
+	isTrusted: true,
+	workspaceFolders: [],
+};
+
+const extensionsApi = {
+	getExtension: () => undefined,
+};
+
+const vscodeMock = {
+	commands: commandsApi,
+	env: envApi,
+	extensions: extensionsApi,
+	RelativePattern: class RelativePattern {
+		constructor(base, pattern) {
+			this.base = base;
+			this.pattern = pattern;
+		}
+	},
+	ViewColumn: { Beside: 2 },
+	ConfigurationTarget: { Global: 1, Workspace: 2, WorkspaceFolder: 3 },
+	StatusBarAlignment: { Left: 1 },
+	TreeItem: class TreeItem {
+		constructor(label, collapsibleState) {
+			this.label = label;
+			this.collapsibleState = collapsibleState;
+		}
+	},
+	TreeItemCollapsibleState: { None: 0, Collapsed: 1, Expanded: 2 },
+	ThemeIcon: class ThemeIcon {
+		constructor(id) { this.id = id; }
+	},
+	EventEmitter: class EventEmitter {
+		constructor() { this.event = () => noopDisposable; }
+		fire() {}
+		dispose() {}
+	},
+	window: windowApi,
+	workspace: workspaceApi,
+	Uri: {},
+};
+
+Module._load = function mockVscode(request, parent, isMain) {
+	if (request !== 'vscode') {
+		return originalLoad.apply(this, arguments);
+	}
+	return vscodeMock;
+};

@@ -1,7 +1,7 @@
 ﻿/**
- * activate.ts â€” Registro de comandos y watchers de VS Code
+ * activate.ts — Registro de comandos y watchers de VS Code
  *
- * ExtraÃ­do de extension.ts durante la modularizaciÃ³n (ADR-014).
+ * Extraído de extension.ts durante la modularización (ADR-014).
  */
 
 import * as vscode from 'vscode';
@@ -27,7 +27,7 @@ import { installSecretHook } from './security/secretHook';
 
 
 export function _doActivate(context: vscode.ExtensionContext, output: vscode.OutputChannel) {
-	// Status bar â€” se conserva: el botÃ³n inferior sigue abriendo el menÃº.
+	// Status bar — se conserva: el botón inferior sigue abriendo el menú.
 	const statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
 	statusBar.text = '$(layout-panel) Ralph';
 	statusBar.tooltip = 'Ralph Suite';
@@ -131,7 +131,7 @@ export function _doActivate(context: vscode.ExtensionContext, output: vscode.Out
 				? buildAlfredAnalyzePrompt(identity, folders.map(folder => folder.root))
 				: buildAnalyzeExistingProjectPrompt(folders.map(folder => folder.root));
 			await sendToChat(prompt, {
-				fallbackMessage: 'Analyze prompt copied â€” paste in Chat.',
+				fallbackMessage: 'Analyze prompt copied — paste in Chat.',
 				agent: identity?.actions.analyzeProject.agent,
 			});
 		}),
@@ -272,8 +272,8 @@ export function _doActivate(context: vscode.ExtensionContext, output: vscode.Out
 // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
- * Resuelve la identidad de Alfred para la acciÃ³n en curso. Devuelve `null`
- * cuando el modo NO es efectivo (ruta de hoy) o `off`, sin cachÃ© por acciÃ³n.
+ * Resuelve la identidad de Alfred para la acción en curso. Devuelve `null`
+ * cuando el modo NO es efectivo (ruta de hoy) o `off`, sin caché por acción.
  */
 async function currentAlfredIdentity(output: vscode.OutputChannel): Promise<AlfredIdentity | null> {
 	const mode = await resolveAlfredMode(output);
@@ -283,7 +283,7 @@ async function currentAlfredIdentity(output: vscode.OutputChannel): Promise<Alfr
 /**
  * Registro del syncIssue en modo Alfred. Como no lanza chat, no inventamos un
  * prompt: solo declaramos proveedor, modelo y agente en el OutputChannel.
- * Best-effort y sin bloquear el camino sÃ­ncrono.
+ * Best-effort y sin bloquear el camino síncrono.
  */
 function logAlfredSync(output: vscode.OutputChannel, issueNumber: unknown, status: unknown): void {
 	try {
@@ -309,7 +309,7 @@ function getPrdPathSetting(): string {
 function resolveCommandWorkspaceRoot(workspaceRoot: string | undefined, allowed: string[]): string | undefined {
 	if (workspaceRoot !== undefined) {
 		if (!allowed.includes(workspaceRoot)) {
-			throw new Error(`Ralph: raÃ­z de workspace no permitida: ${workspaceRoot}`);
+			throw new Error(`Ralph: raíz de workspace no permitida: ${workspaceRoot}`);
 		}
 		return workspaceRoot;
 	}

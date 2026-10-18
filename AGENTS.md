@@ -20,10 +20,10 @@ You are a Senior Software Engineer working on ralph-suite.
 - GitHub references use `owner/repo#N`; GitHub assigns `N`. `ADR-NNN` is reserved exclusively for decisions.
 - A Ralph local ID is exactly the ID supplied by the backlog and runner context. Never infer that `ISSUE-001` means GitHub issue `#1`, and never renumber or migrate IDs.
 - The `ralph-suite.syncIssue` command maps GitHub to Ralph only through explicit `github:#N` or `owner/repo#N` labels. Never infer `ISSUE-00N` from GitHub `#N`; write only runtime `.ralph`, never `prd.json`.
-- The local backlog path is `ralph-suite.prdPath` (default `docs/ralph/prd.json`; a legacy root `prd.json` still loads if the default is missing). This repository's required pre-task reads remain `.agent/memories.md` and `plans/*` until those plan files are explicitly updated.
+- The local backlog path is `ralph-suite.prdPath` (default `docs/ralph/prd.json`; a legacy root `prd.json` still loads if the default is missing). This repository's pre-task reads are `.agent/memories.md` only if it exists, plus `docs/project/` and `docs/adr/`. The legacy `plans/` folder is historical: read it only when `docs/` does not cover the topic.
 - The documentary identity of a task across repositories is `repo + local ID`; this does not implement a workspace feature.
 - Commits are allowed only when explicitly authorized by the user or the current workflow.
-- Never create new files inside the plans/ folder unless the current task description explicitly names a plans/ file to create or modify (e.g., "update plans/arquitectura.md"). Creating new plans/ files to document your own decisions is not permitted.
+- New documentation goes under `docs/`. Do not create files in `plans/`: that folder is historical. Update an existing `plans/` file only when the task names it explicitly.
 
 ## Checkpoints (stop and ask before these)
 1. Delete files or directories — this satisfies the confirmation requirement in Rules.
@@ -31,15 +31,16 @@ You are a Senior Software Engineer working on ralph-suite.
 3. Change authentication or security configuration
 4. Install or upgrade major dependencies
 5. Refactor more than 500 lines of code
-6. Change architecture documented in plans/
+6. Change architecture documented in `docs/`
 
-## Before starting any task, read:
+## Before starting any task, read (when present):
 - .agent/memories.md
-- plans/arquitectura.md
-- plans/seguridad.md
-- plans/decisiones.md
+- docs/project/architecture.md
+- docs/project/threat-model.md
+- docs/adr/
+- `plans/*` only as historical context when `docs/` is missing
 
-If any of these files is missing or unreadable, stop immediately and notify the user with: "Cannot start task: required file <filename> is missing. Please create it or confirm it is not needed for this task."
+If one of these files is missing or unreadable, do not stop: note it and continue. Stop only when the task itself depends on that file.
 
 Checkpoints always take priority over the completion protocol. If a completion step would trigger a checkpoint, stop and ask before writing status files. Resume the completion protocol only after receiving user approval.
 

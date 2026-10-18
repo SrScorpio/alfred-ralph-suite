@@ -11,7 +11,7 @@ const mochaArgs = [
 
 const result = spawnSync(process.execPath, [mochaCommand, ...mochaArgs], {
   stdio: 'inherit',
-  env: { ...process.env, NODE_NO_WARNINGS: '1' },
+  env: { ...process.env, NODE_NO_WARNINGS: '1', TS_NODE_PREFER_TS_EXTS: 'true' },
   shell: false,
 });
 

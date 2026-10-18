@@ -105,4 +105,63 @@ Some description but no steps section.`;
 			assert.deepStrictEqual(result!.issues[3].dependencies, ['ISSUE-003']);
 		});
 	});
+		it('parses numbered headings at any level', () => {
+			const md = `# Plan: Release
+
+## 1. Preparar el repo
+## 2. Publicar la release`;
+			const result = importPlanToPrd(md);
+			assert.ok(result);
+			assert.strictEqual(result!.issues.length, 2);
+			assert.strictEqual(result!.issues[0].title, 'Preparar el repo');
+			assert.strictEqual(result!.issues[1].title, 'Publicar la release');
+		});
+
+		it('parses Spanish "Paso N:" headings', () => {
+			const md = `# Plan: Migracion
+
+## Paso 1: Leer el backlog
+## Paso 2: Migrar las tareas`;
+			const result = importPlanToPrd(md);
+			assert.ok(result);
+			assert.strictEqual(result!.issues.length, 2);
+			assert.strictEqual(result!.issues[0].title, 'Leer el backlog');
+			assert.strictEqual(result!.issues[1].title, 'Migrar las tareas');
+		});
+
+		it('parses unnumbered headings inside a Steps section', () => {
+			const md = `# Plan: Entrega
+
+## Steps
+
+### Disenar
+### Implementar
+
+## Notes
+No es un paso.`;
+			const result = importPlanToPrd(md);
+			assert.ok(result);
+			assert.deepStrictEqual(result!.issues.map(i => i.title), ['Disenar', 'Implementar']);
+		});
+
+		it('imports a prd.json object with issues', () => {
+			const md = JSON.stringify({
+				project: 'Suite',
+				description: 'Backlog existente',
+				version: '1.0.0',
+				issues: [
+					{ id: 'ISSUE-004', title: 'Primera', priority: 'P1', status: 'completed', acceptanceCriteria: ['ok'], dependencies: [], labels: [] },
+					{ title: 'Segunda' },
+				],
+			});
+			const result = importPlanToPrd(md);
+			assert.ok(result);
+			assert.strictEqual(result!.project, 'Suite');
+			assert.strictEqual(result!.issues.length, 2);
+			assert.strictEqual(result!.issues[0].id, 'ISSUE-004');
+			assert.strictEqual(result!.issues[0].priority, 'P1');
+			assert.strictEqual(result!.issues[0].status, 'completed');
+			assert.strictEqual(result!.issues[1].id, 'ISSUE-002');
+			assert.strictEqual(result!.issues[1].priority, 'P2');
+		});
 });

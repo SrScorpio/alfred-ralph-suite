@@ -657,7 +657,13 @@ export class KanbanPanel {
 				}
 				if (!planText) { break; }
 				const imported = importPlanToPrd(planText);
-				if (!imported || !imported.issues.length) { vscode.window.showErrorMessage('Could not parse tasks from the plan.'); break; }
+				if (!imported || !imported.issues.length) {
+					const es = detectLocale() === 'es';
+					void vscode.window.showErrorMessage(es
+						? 'No se encontraron tareas en el plan. Usa pasos numerados ("1. **Titulo**", "### 1. Titulo" o "## Paso 1: Titulo"), un apartado Steps con subtitulos, o selecciona un prd.json con la clave issues.'
+						: 'No tasks found in the plan. Use numbered steps ("1. **Title**", "### 1. Title" or "## Step 1: Title"), a Steps section with subheadings, or select a prd.json with an issues array.');
+					break;
+				}
 				const prdPathI = PrdManager.prdPath(this.root, this.prdPathSetting());
 
 				// Warn about leftover .ralph/ state if this is a fresh import (no prd.json)

@@ -15,12 +15,81 @@ interface ImportedPrd {
 	issues:      any[];
 }
 
-// ── Plan markdown → prd.json parser ─────────────────────────────────────────
+// ── Plan markdown → prd.json parser ──────────────────────────────────────────
+
+const BOLD_NUMBERED_STEP = /^\d+[.)]\s+\*\*(.+?)\*\*/;
+const BOLD_NAMED_STEP = /^\*\*(?:step|paso)\s+\d+\s*[.:\-–)]\s*(.+?)\*\*/i;
+const HEADING_NAMED_STEP = /^#{1,6}\s+(?:step|paso)\s+\d+\s*[.:\-–)]\s*(.+?)\s*$/i;
+const HEADING_NUMBERED_STEP = /^#{1,6}\s+\d+[.)\-–]\s+(.+?)\s*$/;
+const HEADING = /^(#{1,6})\s+(.+?)\s*#*\s*$/;
+const STEP_SECTION = /^(?:\*\*)?\s*(?:steps?|pasos?|tareas?|tasks?|fases?|plan de implementaci[oó]n|implementation plan)\s*(?:\*\*)?\s*:?\s*$/i;
+const SECTION_BREAK = /^(?:\*\*)?\s*(?:verification|verificaci[oó]n|riesgos|risks|notas|notes|archivos|files|referencias|references)\s*(?:\*\*)?\s*:?\s*$/i;
+const BREAKING_PRIORITIES = new Set(['P0', 'P1', 'P2', 'P3']);
+const VALID_STATUSES = new Set(['todo', 'inprogress', 'completed', 'blocked', 'failed']);
+
+function cleanTitle(value: string): string {
+	return value.replace(/\*\*/g, '').replace(/`/g, '').trim().slice(0, 160) || 'Untitled step';
+}
+
+function emptyStep(title: string, existing: any[]): any {
+	return {
+		id: generateNextId(existing.map(item => String(item.id))),
+		title: cleanTitle(title),
+		description: '',
+		epic: undefined,
+		priority: 'P2',
+		status: 'todo',
+		acceptanceCriteria: [] as string[],
+		dependencies: [] as string[],
+		labels: [] as string[],
+	};
+}
+
+/**
+ * Importa un prd.json ya escrito. Sin esto, elegir el propio backlog en el
+ * diálogo devolvía "no se encontraron tareas".
+ */
+function parseJsonBacklog(text: string): ImportedPrd | null {
+	const trimmed = text.trim();
+	if (!trimmed.startsWith('{')) { return null; }
+	let data: any;
+	try { data = JSON.parse(trimmed); } catch { return null; }
+	const list = Array.isArray(data?.issues) ? data.issues
+		: Array.isArray(data?.userStories) ? data.userStories
+			: null;
+	if (!list) { return null; }
+
+	const issues = list.map((raw: any, index: number) => {
+		const priority = String(raw?.priority ?? '').toUpperCase();
+		const status = String(raw?.status ?? '').toLowerCase();
+		return {
+			id: typeof raw?.id === 'string' && raw.id.trim() ? raw.id.trim() : `ISSUE-${String(index + 1).padStart(3, '0')}`,
+			title: cleanTitle(String(raw?.title ?? raw?.name ?? `Issue ${index + 1}`)),
+			description: String(raw?.description ?? '').trim(),
+			epic: raw?.epic ? String(raw.epic) : undefined,
+			priority: BREAKING_PRIORITIES.has(priority) ? priority : 'P2',
+			status: VALID_STATUSES.has(status) ? status : 'todo',
+			acceptanceCriteria: Array.isArray(raw?.acceptanceCriteria) ? raw.acceptanceCriteria.map(String) : [],
+			dependencies: Array.isArray(raw?.dependencies) ? raw.dependencies.map(String) : [],
+			labels: Array.isArray(raw?.labels) ? raw.labels.map(String) : [],
+		};
+	});
+
+	return {
+		project: String(data?.project ?? data?.projectName ?? 'Imported Project').trim() || 'Imported Project',
+		description: String(data?.description ?? '').trim(),
+		version: String(data?.version ?? '1.0.0').trim() || '1.0.0',
+		issues,
+	};
+}
 
 export function importPlanToPrd(markdown: string): ImportedPrd | null {
-	const lines = markdown.split('\n');
+	const fromJson = parseJsonBacklog(markdown);
+	if (fromJson) { return fromJson; }
 
-	// Extract title from "## Plan: <title>" or first H1/H2
+	const lines = markdown.split(/\r?\n/);
+
+	// Extract title from "## Plan: <title>" or first H1
 	let project     = 'Imported Project';
 	let description = '';
 
@@ -35,18 +104,12 @@ export function importPlanToPrd(markdown: string): ImportedPrd | null {
 	const tldrMatch = markdown.match(/TL;DR[^\n]*[-–]\s*(.+)/i);
 	if (tldrMatch) { description = tldrMatch[1].trim(); }
 
-	// Parse numbered steps from "**Steps**" section
-	const issues: any[] = [];
-	let inSteps    = false;
-	let stepNum    = 0;
-	let currentStep: any = null;
-
-	// Find relevant files section for later cross-referencing
+	// Relevant files for later cross-referencing
 	const relevantFiles: string[] = [];
 	const fileMatches = markdown.matchAll(/`([^`]+\.[a-z]{2,6})`/g);
 	for (const m of fileMatches) { relevantFiles.push(m[1]); }
 
-	// Find verification section
+	// Verification section
 	const verification: string[] = [];
 	let inVerification = false;
 	for (const line of lines) {
@@ -58,100 +121,100 @@ export function importPlanToPrd(markdown: string): ImportedPrd | null {
 		}
 	}
 
+	const issues: any[] = [];
+	let currentStep: any = null;
+	let inSteps = false;
+	let stepSectionLevel: number | null = null;
+
+	const pushStep = (title: string) => {
+		if (currentStep) { issues.push(currentStep); }
+		currentStep = emptyStep(title, issues);
+		inSteps = true;
+	};
+
 	for (const line of lines) {
-		// Detect numbered step: "1. **Title**" or "**Step 1: Title**"
-		const stepTitle = line.match(/^\d+\.\s+\*\*(.+?)\*\*/)
-			|| line.match(/^\*\*Step\s+\d+:\s*(.+?)\*\*/i);
+		const trimmed = line.trim();
 
-		// Detect "### N. Title" in section
-		const h3Step = line.match(/^###\s+\d+\.\s+(.+)/);
+		// Numbered or named steps: "1. **Title**", "**Step 1: Title**",
+		// "### 1. Title", "## Paso 1: Title", "#### 2) Title".
+		const named = line.match(BOLD_NAMED_STEP) || line.match(HEADING_NAMED_STEP);
+		const numbered = line.match(BOLD_NUMBERED_STEP) || line.match(HEADING_NUMBERED_STEP);
+		if (named) { pushStep(named[1]); continue; }
+		if (numbered) { pushStep(numbered[1]); continue; }
 
-		if (stepTitle) {
-			// Save previous step
-			if (currentStep) { issues.push(currentStep); }
-			stepNum++;
-			currentStep = {
-				id: generateNextId(issues.map(i => String(i.id))),
-				title: stepTitle[1].trim(),
-				description: '',
-				epic: undefined,
-				priority: 'P2',
-				status: 'todo',
-				acceptanceCriteria: [] as string[],
-				dependencies: [] as string[],
-				labels: [] as string[],
-			};
-			inSteps = true;
-		} else if (h3Step) {
-			if (currentStep) { issues.push(currentStep); }
-			stepNum++;
-			currentStep = {
-				id: generateNextId(issues.map(i => String(i.id))),
-				title: h3Step[1].trim(),
-				description: '',
-				epic: undefined,
-				priority: 'P2',
-				status: 'todo',
-				acceptanceCriteria: [] as string[],
-				dependencies: [] as string[],
-				labels: [] as string[],
-			};
-			inSteps = true;
-		} else if (currentStep && inSteps) {
-			const trimmed = line.trim();
-			if (!trimmed) { continue; }
-
-			// Detect deprecation
-			if (/deprecat|reemplazar|replace|migrate/i.test(trimmed)) {
-				currentStep.labels.push('migration');
-			}
-
-			// Detect criteria (checklist items)
-			const acMatch = trimmed.match(/^[-*]\s*\[.?\]\s*(.+)/);
-			if (acMatch) {
-				currentStep.acceptanceCriteria.push(acMatch[1].trim());
+		const heading = line.match(HEADING);
+		if (heading) {
+			const level = heading[1].length;
+			const content = heading[2];
+			if (STEP_SECTION.test(content)) {
+				stepSectionLevel = level;
 				continue;
 			}
-
-			// Detect epics
-			const epicMatch = trimmed.match(/^Epic[:\s]+(.+)/i);
-			if (epicMatch) {
-				currentStep.epic = epicMatch[1].trim();
-				continue;
+			if (stepSectionLevel !== null) {
+				if (level > stepSectionLevel) { pushStep(content); continue; }
+				stepSectionLevel = null;
 			}
+			continue;
+		}
 
-			// Detect priority
-			const prioMatch = trimmed.match(/^Priority[:\s]+(.+)/i);
-			if (prioMatch) {
-				currentStep.priority = prioMatch[1].trim().toUpperCase();
-				continue;
-			}
+		if (SECTION_BREAK.test(trimmed)) {
+			stepSectionLevel = null;
+			continue;
+		}
 
-			// Everything else is description
-			if (currentStep.description) {
-				currentStep.description += '\n' + trimmed;
-			} else {
-				currentStep.description = trimmed;
-			}
+		if (!currentStep || !inSteps) { continue; }
+		if (!trimmed) { continue; }
+
+		// Detect deprecation
+		if (/deprecat|reemplazar|replace|migrate/i.test(trimmed)) {
+			currentStep.labels.push('migration');
+		}
+
+		// Detect criteria (checklist items)
+		const acMatch = trimmed.match(/^[-*]\s*\[.?\]\s*(.+)/);
+		if (acMatch) {
+			currentStep.acceptanceCriteria.push(acMatch[1].trim());
+			continue;
+		}
+
+		// Detect epics
+		const epicMatch = trimmed.match(/^Epic[:\s]+(.+)/i);
+		if (epicMatch) {
+			currentStep.epic = epicMatch[1].trim();
+			continue;
+		}
+
+		// Detect priority
+		const prioMatch = trimmed.match(/^Priority[:\s]+(.+)/i);
+		if (prioMatch) {
+			currentStep.priority = prioMatch[1].trim().toUpperCase();
+			continue;
+		}
+
+		// Everything else is description
+		if (currentStep.description) {
+			currentStep.description += '\n' + trimmed;
+		} else {
+			currentStep.description = trimmed;
 		}
 	}
 
 	// Push last step
 	if (currentStep) { issues.push(currentStep); }
 
-	// Post-process: chain steps with sequential dependencies (step N depends on step N-1)
+	// Chain steps with sequential dependencies (step N depends on step N-1)
 	for (let i = 1; i < issues.length; i++) {
 		issues[i].dependencies.push(issues[i - 1].id);
 	}
 
-	// Post-process: add relevant file references to descriptions
+	// Add relevant file references to descriptions
 	if (relevantFiles.length > 0) {
 		for (const issue of issues) {
 			issue.description += `\n\n**Related files:** ${relevantFiles.join(', ')}`;
 		}
 	}
 
-	// Post-process: add verification to descriptions if not already included
+	// Add verification to the last step if it is not already included
 	if (verification.length > 0 && issues.length > 0) {
 		issues[issues.length - 1].acceptanceCriteria.push(...verification);
 	}

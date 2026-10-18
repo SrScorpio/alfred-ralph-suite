@@ -207,4 +207,16 @@ describe('AC8 load legacy numeric ids without migration', () => {
 		const raw = PrdManager.loadRaw(tmpDir);
 		assert.strictEqual(raw.issues[0].id, 1);
 	});
+	it('carga un prd.json con BOM de UTF-8', () => {
+		const modernDir = path.join(tmpDir, 'docs', 'ralph');
+		fs.mkdirSync(modernDir, { recursive: true });
+		fs.writeFileSync(path.join(modernDir, 'prd.json'), '\uFEFF' + JSON.stringify({
+			project: 'bom',
+			issues: [{ id: 'ISSUE-001', title: 'Con BOM' }],
+		}), 'utf-8');
+
+		const prd = PrdManager.load(tmpDir);
+		assert.ok(prd, 'el BOM no debe dejar el tablero vacio');
+		assert.strictEqual(prd!.issues[0].id, 'ISSUE-001');
+	});
 });

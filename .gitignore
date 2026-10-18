@@ -7,6 +7,7 @@ out/
 
 # tsc emit that landed next to sources (outDir is dist/)
 src/**/*.js
+!src/test/vscodeMock.js
 compiled/
 _p13.py
 _patch_*.py

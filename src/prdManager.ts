@@ -82,7 +82,7 @@ export function countRecognizedItems(raw: unknown): number {
 
 function readJsonFile(filePath: string): any | null {
 	try {
-		return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+		return JSON.parse(fs.readFileSync(filePath, 'utf-8').replace(/^\uFEFF/, ''));
 	} catch {
 		return null;
 	}
@@ -211,7 +211,7 @@ export class PrdManager {
 		const prdPath = this.prdPath(root, configuredPath);
 		if (!fs.existsSync(prdPath)) { return null; }
 		try {
-			return JSON.parse(fs.readFileSync(prdPath, 'utf-8'));
+			return readJsonFile(prdPath);
 		} catch (e) {
 			console.error('[Ralph] Failed to parse prd.json:', e);
 			return null;
