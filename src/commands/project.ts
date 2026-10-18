@@ -100,10 +100,10 @@ export async function setupProject(output: vscode.OutputChannel, alfredIdentity?
 		output.appendLine(`[Setup] modo Alfred — no se genera ningún fichero; AGENTS.md lo posee ${owner}`);
 		const action = await vscode.window.showInformationMessage(
 			`En modo Alfred, AGENTS.md lo posee ${owner}. Ralph no genera el paquete del proyecto.`,
-			'Abrir paleta de Alfred Dev',
+			'Iniciar flujo',
 		);
-		if (action === 'Abrir paleta de Alfred Dev') {
-			void vscode.commands.executeCommand('workbench.action.quickOpen', '>Alfred');
+		if (action === 'Iniciar flujo') {
+			void vscode.commands.executeCommand('alfred-ralph.startFlow');
 		}
 		return;
 	}
