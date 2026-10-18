@@ -6,6 +6,21 @@ All notable changes to Ralph Suite are documented here.
 
 ## [Unreleased]
 
+## [1.12.1] - 2026-10-18
+
+### Added
+- Paleta de Alfred: hablar con Alfred, ver progreso, pausar, retomar e iniciar flujo.
+- Secret Guard opt-in: Alfred: Instalar Secret Guard.
+- La tarjeta enlaza un label owner/repo#N a su issue de GitHub.
+
+### Changed
+- Los ajustes dicen lo que hacen con el modo Alfred activo. Rol, stack, proyecto y checkpoints solo valen con alfredMode en off.
+- Iniciar proyecto, en modo Alfred, abre el flujo de esta suite y no genera AGENTS.md.
+
+### Fixed
+- Acentos del tablero, rotos al anadir el enlace de la tarjeta.
+
+
 ### Added
 - El chat de una tarea en modo Alfred se abre nombrando al subagente anunciado (`@junior-dev` y el campo `agent`). Sin identidad válida sigue cayendo en el chat activo.
 - IDs nuevos de backlog en formato `ISSUE-NNN` (mínimo 3 letras + número). Analyze, Init, import de plan, addIssue y Add from Chat ya no generan `1` ni `STEP-*`. IDs legacy se conservan.

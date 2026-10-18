@@ -2,7 +2,7 @@
   "name": "alfred-ralph-suite",
   "displayName": "Alfred Ralph Suite",
   "description": "Equipo de agentes Alfred Dev y tablero Ralph en una sola extensión: backlog, runner y quality gates sin dos instalaciones.",
-  "version": "1.12.0",
+  "version": "1.12.1",
   "publisher": "SrScorpio",
   "engines": {
     "vscode": "^1.103.0"
@@ -180,7 +180,10 @@
         },
         "ralph-suite.alfredMode": {
           "type": "string",
-          "enum": ["auto", "off"],
+          "enum": [
+            "auto",
+            "off"
+          ],
           "default": "auto",
           "description": "%config.alfredMode.description%"
         },
@@ -214,14 +217,22 @@
               "properties": {
                 "engine": {
                   "type": "string",
-                  "enum": ["copilot", "codex", "claude", "opencode"]
+                  "enum": [
+                    "copilot",
+                    "codex",
+                    "claude",
+                    "opencode"
+                  ]
                 },
                 "model": {
                   "type": "string"
                 },
                 "mode": {
                   "type": "string",
-                  "enum": ["execute", "review"]
+                  "enum": [
+                    "execute",
+                    "review"
+                  ]
                 }
               }
             },
@@ -230,14 +241,22 @@
               "properties": {
                 "engine": {
                   "type": "string",
-                  "enum": ["copilot", "codex", "claude", "opencode"]
+                  "enum": [
+                    "copilot",
+                    "codex",
+                    "claude",
+                    "opencode"
+                  ]
                 },
                 "model": {
                   "type": "string"
                 },
                 "mode": {
                   "type": "string",
-                  "enum": ["execute", "review"]
+                  "enum": [
+                    "execute",
+                    "review"
+                  ]
                 }
               }
             },
@@ -246,14 +265,22 @@
               "properties": {
                 "engine": {
                   "type": "string",
-                  "enum": ["copilot", "codex", "claude", "opencode"]
+                  "enum": [
+                    "copilot",
+                    "codex",
+                    "claude",
+                    "opencode"
+                  ]
                 },
                 "model": {
                   "type": "string"
                 },
                 "mode": {
                   "type": "string",
-                  "enum": ["execute", "review"]
+                  "enum": [
+                    "execute",
+                    "review"
+                  ]
                 }
               }
             },
@@ -262,14 +289,22 @@
               "properties": {
                 "engine": {
                   "type": "string",
-                  "enum": ["copilot", "codex", "claude", "opencode"]
+                  "enum": [
+                    "copilot",
+                    "codex",
+                    "claude",
+                    "opencode"
+                  ]
                 },
                 "model": {
                   "type": "string"
                 },
                 "mode": {
                   "type": "string",
-                  "enum": ["execute", "review"]
+                  "enum": [
+                    "execute",
+                    "review"
+                  ]
                 }
               }
             }
@@ -279,14 +314,22 @@
             "properties": {
               "engine": {
                 "type": "string",
-                "enum": ["copilot", "codex", "claude", "opencode"]
+                "enum": [
+                  "copilot",
+                  "codex",
+                  "claude",
+                  "opencode"
+                ]
               },
               "model": {
                 "type": "string"
               },
               "mode": {
                 "type": "string",
-                "enum": ["execute", "review"]
+                "enum": [
+                  "execute",
+                  "review"
+                ]
               }
             }
           },
@@ -306,7 +349,10 @@
         },
         "ralph-suite.boardScope": {
           "type": "string",
-          "enum": ["folder", "workspace"],
+          "enum": [
+            "folder",
+            "workspace"
+          ],
           "default": "folder",
           "description": "Kanban scope: current folder or aggregated workspace folders."
         },
