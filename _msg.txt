@@ -1,5 +1,0 @@
-﻿fix: importar planes y cargar el backlog con BOM
-
-El importador entiende JSON con issues, pasos con # y las cabeceras "Paso N". El cargador ignora el BOM, que dejaba el tablero vacio. AGENTS.md manda a docs/ y ya no se para la tarea si falta contexto. Los tests ya no leen el JS viejo.
-
-Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>

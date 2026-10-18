@@ -1,8 +1,0 @@
-﻿Arregla el tablero vacio cuando el prd.json lleva BOM y el error al importar planes.
-
-- El importador acepta JSON con issues, pasos con # y las cabeceras "Paso N".
-- AGENTS.md y copilot-instructions mandan a docs/, no a plans/.
-- El aviso de importacion dice que formatos valen.
-- Tests contra el TypeScript, no contra JS compilado viejo.
-
-Instalar: code --install-extension alfred-ralph-suite-1.12.2.vsix y recargar la ventana.
