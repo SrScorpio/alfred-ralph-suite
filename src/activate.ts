@@ -1,7 +1,7 @@
-/**
- * activate.ts — Registro de comandos y watchers de VS Code
+﻿/**
+ * activate.ts â€” Registro de comandos y watchers de VS Code
  *
- * Extraído de extension.ts durante la modularización (ADR-014).
+ * ExtraÃ­do de extension.ts durante la modularizaciÃ³n (ADR-014).
  */
 
 import * as vscode from 'vscode';
@@ -22,9 +22,12 @@ import { syncIssue } from './commands/syncIssue';
 import { RalphSidebarProvider } from './sidebarTree';
 import { resolveAlfredMode, AlfredIdentity } from './alfredIdentity';
 import { buildAlfredAnalyzePrompt, buildAlfredSyncLedger } from './alfredPrompt';
+import { ALFRED_CONTINUITY, ALFRED_FLOWS, withDescriptions } from './commands/alfredPalette';
+import { installSecretHook } from './security/secretHook';
+
 
 export function _doActivate(context: vscode.ExtensionContext, output: vscode.OutputChannel) {
-	// Status bar — se conserva: el botón inferior sigue abriendo el menú.
+	// Status bar â€” se conserva: el botÃ³n inferior sigue abriendo el menÃº.
 	const statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
 	statusBar.text = '$(layout-panel) Ralph';
 	statusBar.tooltip = 'Ralph Suite';
@@ -39,6 +42,49 @@ export function _doActivate(context: vscode.ExtensionContext, output: vscode.Out
 
 	// Register all commands
 	context.subscriptions.push(
+
+		vscode.commands.registerCommand('alfred-ralph.openChat', async () => {
+			await sendToChat('@alfred', { agent: 'alfred', fallbackMessage: 'Prompt copiado. Pegalo en el chat.' });
+		}),
+
+		vscode.commands.registerCommand('alfred-ralph.progress', async () => {
+			const action = ALFRED_CONTINUITY.find((item) => item.id === 'progress');
+			if (action) await sendToChat(action.prompt, { agent: 'alfred', fallbackMessage: 'Prompt copiado. Pegalo en el chat.' });
+		}),
+
+		vscode.commands.registerCommand('alfred-ralph.pause', async () => {
+			const action = ALFRED_CONTINUITY.find((item) => item.id === 'pause');
+			if (action) await sendToChat(action.prompt, { agent: 'alfred', fallbackMessage: 'Prompt copiado. Pegalo en el chat.' });
+		}),
+
+		vscode.commands.registerCommand('alfred-ralph.retomar', async () => {
+			const action = ALFRED_CONTINUITY.find((item) => item.id === 'retomar');
+			if (action) await sendToChat(action.prompt, { agent: 'alfred', fallbackMessage: 'Prompt copiado. Pegalo en el chat.' });
+		}),
+
+		vscode.commands.registerCommand('alfred-ralph.startFlow', async () => {
+			const selected = await vscode.window.showQuickPick(withDescriptions(ALFRED_FLOWS), {
+				placeHolder: 'Flujo',
+				title: 'Alfred: iniciar flujo',
+			});
+			if (!selected) return;
+			await sendToChat(selected.prompt, { agent: 'alfred', fallbackMessage: 'Prompt copiado. Pegalo en el chat.' });
+		}),
+
+		vscode.commands.registerCommand('alfred-ralph.installSecretHook', async () => {
+			const root = getWorkspaceRoot();
+			if (!root) {
+				void vscode.window.showErrorMessage('Abre una carpeta de trabajo antes de instalar el Secret Guard.');
+				return;
+			}
+			try {
+				await installSecretHook(root);
+				void vscode.window.showInformationMessage('Secret Guard instalado en el hook pre-commit de este repo.');
+			} catch (error: unknown) {
+				void vscode.window.showErrorMessage(error instanceof Error ? error.message : 'No se pudo instalar el Secret Guard.');
+			}
+		}),
+
 
 		vscode.commands.registerCommand('ralph-suite.showMenu', () => {
 			output.appendLine('[Ralph] showMenu triggered');
@@ -85,7 +131,7 @@ export function _doActivate(context: vscode.ExtensionContext, output: vscode.Out
 				? buildAlfredAnalyzePrompt(identity, folders.map(folder => folder.root))
 				: buildAnalyzeExistingProjectPrompt(folders.map(folder => folder.root));
 			await sendToChat(prompt, {
-				fallbackMessage: 'Analyze prompt copied — paste in Chat.',
+				fallbackMessage: 'Analyze prompt copied â€” paste in Chat.',
 				agent: identity?.actions.analyzeProject.agent,
 			});
 		}),
@@ -223,11 +269,11 @@ export function _doActivate(context: vscode.ExtensionContext, output: vscode.Out
 	output.appendLine('[Ralph] commands and watchers registered.');
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
- * Resuelve la identidad de Alfred para la acción en curso. Devuelve `null`
- * cuando el modo NO es efectivo (ruta de hoy) o `off`, sin caché por acción.
+ * Resuelve la identidad de Alfred para la acciÃ³n en curso. Devuelve `null`
+ * cuando el modo NO es efectivo (ruta de hoy) o `off`, sin cachÃ© por acciÃ³n.
  */
 async function currentAlfredIdentity(output: vscode.OutputChannel): Promise<AlfredIdentity | null> {
 	const mode = await resolveAlfredMode(output);
@@ -237,13 +283,13 @@ async function currentAlfredIdentity(output: vscode.OutputChannel): Promise<Alfr
 /**
  * Registro del syncIssue en modo Alfred. Como no lanza chat, no inventamos un
  * prompt: solo declaramos proveedor, modelo y agente en el OutputChannel.
- * Best-effort y sin bloquear el camino síncrono.
+ * Best-effort y sin bloquear el camino sÃ­ncrono.
  */
 function logAlfredSync(output: vscode.OutputChannel, issueNumber: unknown, status: unknown): void {
 	try {
 		void resolveAlfredMode().then(mode => {
 			if (!mode.effective) { return; }
-			const ledger = buildAlfredSyncLedger(mode.identity, `github:#${String(issueNumber)} → ${String(status)}`);
+			const ledger = buildAlfredSyncLedger(mode.identity, `github:#${String(issueNumber)} â†’ ${String(status)}`);
 			output.appendLine(ledger.lines[0]);
 		});
 	} catch { /* best-effort: nunca rompe el sync */ }
@@ -263,7 +309,7 @@ function getPrdPathSetting(): string {
 function resolveCommandWorkspaceRoot(workspaceRoot: string | undefined, allowed: string[]): string | undefined {
 	if (workspaceRoot !== undefined) {
 		if (!allowed.includes(workspaceRoot)) {
-			throw new Error(`Ralph: raíz de workspace no permitida: ${workspaceRoot}`);
+			throw new Error(`Ralph: raÃ­z de workspace no permitida: ${workspaceRoot}`);
 		}
 		return workspaceRoot;
 	}

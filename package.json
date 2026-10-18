@@ -28,6 +28,30 @@
   "contributes": {
     "commands": [
       {
+        "command": "alfred-ralph.openChat",
+        "title": "Alfred: Hablar con Alfred"
+      },
+      {
+        "command": "alfred-ralph.progress",
+        "title": "Alfred: Ver progreso"
+      },
+      {
+        "command": "alfred-ralph.pause",
+        "title": "Alfred: Pausar trabajo"
+      },
+      {
+        "command": "alfred-ralph.retomar",
+        "title": "Alfred: Retomar trabajo"
+      },
+      {
+        "command": "alfred-ralph.startFlow",
+        "title": "Alfred: Iniciar flujo"
+      },
+      {
+        "command": "alfred-ralph.installSecretHook",
+        "title": "Alfred: Instalar Secret Guard"
+      },
+      {
         "command": "ralph-suite.openKanban",
         "title": "Ralph: Open Board"
       },
