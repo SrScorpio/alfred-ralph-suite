@@ -1,4 +1,4 @@
-// ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Types (re-used from prdManager / stateManager to avoid duplication) ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
+// ── Types (re-used from prdManager / stateManager to avoid duplication) ───────
 
 import { Issue, Prd } from '../prdManager';
 import { TaskLog } from '../stateManager';
@@ -13,22 +13,22 @@ export interface BoardConfig {
 	locale?: Locale;
 	boardScope?: 'folder' | 'workspace';
 	showScopeSwitch?: boolean;
-	/** Modo Alfred efectivo: el panel no pinta rules ni boundaries (ADR-018 Ãƒâ€šÃ‚Â§4). */
+	/** Modo Alfred efectivo: el panel no pinta rules ni boundaries (ADR-018 §4). */
 	alfredMode?: boolean;
 }
 
-// ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Shell HTML ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â loaded ONCE, never replaced ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
+// ── Shell HTML — loaded ONCE, never replaced ──────────────────────────────────
 
 export function getShellHtml(nonce: string, locale: Locale = 'en'): string {
 	const s = t(locale);
 	const ph = locale === 'es' ? {
-		titlePh: 'TÃƒÆ’Ã‚Â­tulo descriptivo corto',
-		descPh: 'Ãƒâ€šÃ‚Â¿QuÃƒÆ’Ã‚Â© hay que hacer?',
-		epicPh: 'ej. Auth, BackendÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦',
+		titlePh: 'Título descriptivo corto',
+		descPh: '¿Qué hay que hacer?',
+		epicPh: 'ej. Auth, Backend…',
 	} : {
 		titlePh: 'Short descriptive title',
 		descPh: 'What needs to be done?',
-		epicPh: 'e.g. Auth, BackendÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦',
+		epicPh: 'e.g. Auth, Backend…',
 	};
 	return `<!DOCTYPE html>
 <html lang="${locale}">
@@ -180,7 +180,7 @@ summary:hover{color:var(--text)}
 </style>
 </head>
 <body>
-<div id="root"><div class="empty-state"><div class="empty-icon">ÃƒÂ¢Ã‚ÂÃ‚Â³</div><div class="empty-title">Loading...</div></div></div>
+<div id="root"><div class="empty-state"><div class="empty-icon">⏳</div><div class="empty-title">Loading...</div></div></div>
 <div class="drag-ghost" id="dragGhost"></div>
 
 <!-- Add Issue Modal -->
@@ -191,11 +191,11 @@ summary:hover{color:var(--text)}
     <div class="modal-row"><label class="modal-label">${s.description}</label><textarea class="modal-textarea" id="mi-desc" placeholder="${ph.descPh}"></textarea></div>
     <div class="modal-row-2">
       <div class="modal-row"><label class="modal-label">${s.epicLabel}</label><input class="modal-input" id="mi-epic" placeholder="${ph.epicPh}"/></div>
-      <div class="modal-row"><label class="modal-label">${s.priority}</label><select class="modal-select" id="mi-priority"><option value="P0">ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ‚Â´ P0</option><option value="P1">ÃƒÂ°Ã…Â¸Ã…Â¸Ã‚Â  P1</option><option value="P2" selected>ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ‚Âµ P2</option><option value="P3">ÃƒÂ¢Ã…Â¡Ã‚Âª P3</option></select></div>
+      <div class="modal-row"><label class="modal-label">${s.priority}</label><select class="modal-select" id="mi-priority"><option value="P0">🔴 P0</option><option value="P1">🟠 P1</option><option value="P2" selected>🔵 P2</option><option value="P3">⚪ P3</option></select></div>
     </div>
     <div class="modal-row"><label class="modal-label">${s.acceptanceCriteria}</label><textarea class="modal-textarea" id="mi-criteria"></textarea></div>
     <div class="modal-row"><label class="modal-label">${s.labels}</label><input class="modal-input" id="mi-labels"/></div>
-    <div class="modal-footer"><button class="btn" data-action="cancelAdd">${s.cancel}</button><button class="btn btn-run" data-action="submitAdd">${locale==='es'?'AÃƒÆ’Ã‚Â±adir Issue':'Add Issue'}</button></div>
+    <div class="modal-footer"><button class="btn" data-action="cancelAdd">${s.cancel}</button><button class="btn btn-run" data-action="submitAdd">${locale==='es'?'Añadir Issue':'Add Issue'}</button></div>
   </div>
 </div>
 
@@ -208,7 +208,7 @@ summary:hover{color:var(--text)}
     <div class="modal-row"><label class="modal-label">${s.description}</label><textarea class="modal-textarea" id="em-desc" style="min-height:80px"></textarea></div>
     <div class="modal-row-2">
       <div class="modal-row"><label class="modal-label">${s.epicLabel}</label><input class="modal-input" id="em-epic"/></div>
-      <div class="modal-row"><label class="modal-label">${s.priority}</label><select class="modal-select" id="em-priority"><option value="P0">ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ‚Â´ P0</option><option value="P1">ÃƒÂ°Ã…Â¸Ã…Â¸Ã‚Â  P1</option><option value="P2">ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ‚Âµ P2</option><option value="P3">ÃƒÂ¢Ã…Â¡Ã‚Âª P3</option></select></div>
+      <div class="modal-row"><label class="modal-label">${s.priority}</label><select class="modal-select" id="em-priority"><option value="P0">🔴 P0</option><option value="P1">🟠 P1</option><option value="P2">🔵 P2</option><option value="P3">⚪ P3</option></select></div>
     </div>
     <div class="modal-row"><label class="modal-label">${s.acceptanceCriteria}</label><textarea class="modal-textarea" id="em-criteria" style="min-height:80px"></textarea></div>
     <div class="modal-row-2">
@@ -223,7 +223,7 @@ summary:hover{color:var(--text)}
 const vscode = acquireVsCodeApi();
 function send(type, id, folderIndex) { vscode.postMessage({ type, id, folderIndex }); }
 
-// ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Receive data updates from extension via postMessage ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
+// ── Receive data updates from extension via postMessage ───────────────────────
 window.addEventListener('message', e => {
   const msg = e.data;
   if (!msg || typeof msg !== 'object' || !msg.type) { return; }
@@ -232,13 +232,13 @@ window.addEventListener('message', e => {
   if (msg.type === 'openEditModal') { showEditModal(msg.issue); return; }
 });
 
-// ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Board renderer ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
+// ── Board renderer ────────────────────────────────────────────────────────────
 function renderBoard(data) {
   if (!data) { return; }
   document.getElementById('root').innerHTML = data.html;
 }
 
-// ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Add Issue Modal ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
+// ── Add Issue Modal ───────────────────────────────────────────────────────────
 function showAddIssue() {
   document.getElementById('addModal').style.display = 'flex';
   document.getElementById('mi-title').focus();
@@ -262,7 +262,7 @@ function submitAddIssue() {
   closeAddModal();
 }
 
-// ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Edit Issue Modal ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
+// ── Edit Issue Modal ──────────────────────────────────────────────────────────
 function showEditModal(issue) {
   document.getElementById('em-id').value       = issue.id ?? '';
   document.getElementById('em-title').value    = issue.title ?? '';
@@ -291,7 +291,7 @@ function submitEditIssue() {
   closeEditModal();
 }
 
-// ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Click delegation (data-action / data-close) ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
+// ── Click delegation (data-action / data-close) ───────────────────────────────
 document.addEventListener('click', e => {
   // Modal overlay click-to-close (only when clicking the overlay itself)
   const overlay = e.target.closest('[data-close]');
@@ -320,7 +320,7 @@ document.addEventListener('click', e => {
   }
 });
 
-// ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Keyboard shortcuts ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
+// ── Keyboard shortcuts ────────────────────────────────────────────────────────
 document.addEventListener('keydown', e => {
   const addOpen  = document.getElementById('addModal').style.display  !== 'none';
   const editOpen = document.getElementById('editModal').style.display !== 'none';
@@ -331,7 +331,7 @@ document.addEventListener('keydown', e => {
   }
 });
 
-// ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Drag & Drop (delegated via closest) ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
+// ── Drag & Drop (delegated via closest) ───────────────────────────────────────
 let dragId = null, dragEl = null, dragSourceCol = null, dragFolderIndex = null;
 const ghost = document.getElementById('dragGhost');
 
@@ -395,7 +395,7 @@ document.addEventListener('drop', e => {
 </html>`;
 }
 
-// ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ HTML content builder (returns inner HTML string only) ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
+// ── HTML content builder (returns inner HTML string only) ─────────────────────
 
 export function getBoardContent(
 	prd: Prd | null,
@@ -419,20 +419,20 @@ export function getBoardContent(
 function alfredModePanel(locale: Locale): string {
 	const es = locale === 'es';
 	return `<details class="guardrails-panel">
-  <summary>ÃƒÂ°Ã…Â¸Ã‚Â¤Ã‚Â ${es ? 'Modo Alfred' : 'Alfred mode'}</summary>
+  <summary>🤝 ${es ? 'Modo Alfred' : 'Alfred mode'}</summary>
   <div class="guardrails-body">
     <div class="guardrails-item">${es
 		? 'Gobernado por Alfred Dev. En este modo no se aplican engine, modelProfiles, agentRole, agentStack, agentProject, agentCheckpoints, guardrails ni boundaries de Ralph.'
 		: 'Governed by Alfred Dev. In this mode Ralph\u2019s engine, modelProfiles, agentRole, agentStack, agentProject, agentCheckpoints, guardrails and boundaries do not apply.'}</div>
     <div class="guardrails-item">${es
-		? 'Los ajustes siguen en package.json pero Ralph no los usa aquÃƒÆ’Ã‚Â­.'
+		? 'Los ajustes siguen en package.json pero Ralph no los usa aquí.'
 		: 'The settings remain in package.json but Ralph does not use them here.'}</div>
   </div>
 </details>`;
 }
 
 
-// ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Helpers ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 export function esc(s: unknown): string {
 	return String(s ?? '')
@@ -456,13 +456,12 @@ function githubIssueHref(label: string): string | undefined {
 	return "https://github.com/" + match[1] + "/" + match[2] + "/issues/" + match[3];
 }
 
-
 function card(issue: Issue, log: TaskLog | null, locale: Locale = 'en'): string {
 	const folderIndex = issue.folderIndex ?? 0;
 	const s = t(locale);
 	const pc = PRIORITY_DOT[issue.priority] ?? '#6e7681';
 	const pl = PRIORITY_LABEL[issue.priority] ?? issue.priority;
-	const deps = issue.dependencies?.length ? `<div class="card-deps">ÃƒÂ¢Ã¢â‚¬ÂºÃ¢â‚¬Å“ ${esc(issue.dependencies.join(', '))}</div>` : '';
+	const deps = issue.dependencies?.length ? `<div class="card-deps">⛓ ${esc(issue.dependencies.join(', '))}</div>` : '';
 	const epic = issue.epic ? `<span class="card-epic">${esc(issue.epic)}</span>` : '';
 	const labels = (issue.labels ?? []).map(l => {
 		const href = githubIssueHref(l);
@@ -475,13 +474,13 @@ function card(issue: Issue, log: TaskLog | null, locale: Locale = 'en'): string 
 
 	let logBadge = '';
 	if (log?.status === 'completed' && log.durationMin !== undefined) {
-		logBadge = `<span class="log-badge log-done">ÃƒÂ¢Ã…â€œÃ¢â‚¬Å“ ${log.durationMin}m</span>`;
+		logBadge = `<span class="log-badge log-done">✓ ${log.durationMin}m</span>`;
 	} else if (log?.status === 'inprogress') {
-		logBadge = `<span class="log-badge log-running log-waiting">ÃƒÂ¢Ã‚ÂÃ‚Â± waitingÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦</span>`;
+		logBadge = `<span class="log-badge log-running log-waiting">⏱ waiting…</span>`;
 	}
 
 	const noteText = log?.note || log?.summary || '';
-	const noteHtml = noteText ? `<div class="card-summary">${esc(noteText.slice(0,140))}${noteText.length>140?'ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦':''}</div>` : '';
+	const noteHtml = noteText ? `<div class="card-summary">${esc(noteText.slice(0,140))}${noteText.length>140?'…':''}</div>` : '';
 
 	const criteriaCount = issue.acceptanceCriteria?.length ?? 0;
 	const criteriaTooltip = criteriaCount > 0 ? issue.acceptanceCriteria.map((ac,i) => `${i+1}. ${ac}`).join('\n') : '';
@@ -490,8 +489,8 @@ function card(issue: Issue, log: TaskLog | null, locale: Locale = 'en'): string 
 	if (issue.status === 'todo')        { actions = `<button class="btn btn-run" data-action="runTask" data-id="${idAttr}" data-folder-index="${folderIndex}">${s.run}</button>`; }
 	else if (issue.status === 'blocked'){ actions = `<button class="btn btn-disabled" disabled>${s.blocked}</button>`; }
   else if (issue.status === 'failed') { actions = `<button class="btn btn-disabled" disabled>${s.failed}</button>`; }
-	else if (issue.status === 'inprogress') { actions = `<button class="btn btn-run" data-action="contextRefresh" data-id="${idAttr}" data-folder-index="${folderIndex}" title="${locale==='es'?'Enviar prompt de recuperaciÃƒÆ’Ã‚Â³n de contexto al chat':'Send context recovery prompt to chat'}">${s.refreshContext}</button><button class="btn btn-done" data-action="markDone" data-id="${idAttr}" data-folder-index="${folderIndex}">${s.markDone}</button>`; }
-	else { actions = `<button class="btn btn-note" data-action="addNote" data-id="${idAttr}" data-folder-index="${folderIndex}" title="${s.addNote === 'ÃƒÂ¢Ã…â€œÃ…Â½' ? (locale==='es'?'AÃƒÆ’Ã‚Â±adir nota':'Add note') : s.addNote}">${s.addNote}</button><button class="btn btn-reset" data-action="resetTask" data-id="${idAttr}" data-folder-index="${folderIndex}">${s.reset}</button>`; }
+	else if (issue.status === 'inprogress') { actions = `<button class="btn btn-run" data-action="contextRefresh" data-id="${idAttr}" data-folder-index="${folderIndex}" title="${locale==='es'?'Enviar prompt de recuperación de contexto al chat':'Send context recovery prompt to chat'}">${s.refreshContext}</button><button class="btn btn-done" data-action="markDone" data-id="${idAttr}" data-folder-index="${folderIndex}">${s.markDone}</button>`; }
+	else { actions = `<button class="btn btn-note" data-action="addNote" data-id="${idAttr}" data-folder-index="${folderIndex}" title="${s.addNote === '✎' ? (locale==='es'?'Añadir nota':'Add note') : s.addNote}">${s.addNote}</button><button class="btn btn-reset" data-action="resetTask" data-id="${idAttr}" data-folder-index="${folderIndex}">${s.reset}</button>`; }
 
 	return `<div class="card" draggable="true" data-id="${idAttr}" data-status="${statusAttr}" data-folder-index="${folderIndex}">
   <div class="card-header">
@@ -499,11 +498,11 @@ function card(issue: Issue, log: TaskLog | null, locale: Locale = 'en'): string 
     <div class="card-header-right"><span class="priority-dot" style="background:${pc}" title="${pl}"></span>${logBadge}</div>
   </div>
   <div class="card-title" data-action="showEditIssue" data-id="${idAttr}" data-folder-index="${folderIndex}" title="Click to edit">${esc(issue.title)}</div>
-  ${issue.description ? `<div class="card-desc">${esc(issue.description.slice(0,100))}${issue.description.length>100?'ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦':''}</div>` : ''}
+  ${issue.description ? `<div class="card-desc">${esc(issue.description.slice(0,100))}${issue.description.length>100?'…':''}</div>` : ''}
   ${noteHtml}${deps}
   <div class="card-footer">
     <span class="card-criteria${criteriaTooltip?' has-tooltip':''}"${criteriaTooltip?` data-tooltip="${esc(criteriaTooltip)}"`:''}>
-      ${criteriaCount} criteria${criteriaCount>0?' ÃƒÂ°Ã…Â¸Ã¢â‚¬ËœÃ‚Â':''}
+      ${criteriaCount} criteria${criteriaCount>0?' 👁':''}
     </span>
     ${actions}
   </div>
@@ -538,14 +537,14 @@ function epicView(prd: Prd, logs: Record<string, TaskLog>, statuses: Record<stri
 	return epics.map(epic => {
 		const issues = prd.issues.filter(i => (i.epic || 'General') === epic);
 		const done   = issues.filter(i => i.status === 'completed').length;
-		// Dependency graph (ADR-006) ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â shown when the epic has inter-task dependencies
+		// Dependency graph (ADR-006) — shown when the epic has inter-task dependencies
 		const depGraph = buildDependencySvg(issues, statuses);
 		return `<div class="epic-group">
   <div class="epic-group-header">
     <span class="epic-group-title">${esc(epic)}</span>
     <span class="epic-progress">${done}/${issues.length}</span>
   </div>
-  ${depGraph ? `<div class="epic-deps" style="padding:8px 12px;border-bottom:1px solid var(--border)"><div style="font-size:10px;color:var(--text2);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">ÃƒÂ¢Ã¢â‚¬ÂºÃ¢â‚¬Å“ ${locale==='es'?'Dependencias':'Dependencies'}</div>${depGraph}</div>` : ''}
+  ${depGraph ? `<div class="epic-deps" style="padding:8px 12px;border-bottom:1px solid var(--border)"><div style="font-size:10px;color:var(--text2);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">⛓ ${locale==='es'?'Dependencias':'Dependencies'}</div>${depGraph}</div>` : ''}
   <div class="epic-cards">${issues.map(i => card(i, logs[String(i.folderIndex ?? 0) + ':' + i.id] ?? logs[i.id] ?? null, locale)).join('')}</div>
 </div>`;
 	}).join('');
@@ -582,11 +581,11 @@ function statsBar(prd: Prd, cfg: BoardConfig): string {
 		? `<button class="btn btn-sm btn-runner-on" data-action="stopRunner">${s.stop}</button>`
 		: `<button class="btn btn-sm btn-runner-off" data-action="startRunner">${s.autoRun}</button>`;
 
-	// Health score badge (ADR-005) ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â shown when health data is available
+	// Health score badge (ADR-005) — shown when health data is available
 	const health = cfg.health;
 	const healthLabel = health ? localizedHealthLabel(health.label, locale) : '';
 	const healthBadge = health
-		? `<span class="health-badge health-tooltip" style="background:${health.color}22;color:${health.color}" data-tooltip="${locale==='es' ? 'Completadas' : 'Completion'}: +${health.breakdown.completion}\n${locale==='es' ? 'Tasa de ÃƒÆ’Ã‚Â©xito' : 'Success rate'}: +${health.breakdown.successRate}\n${locale==='es' ? 'Actividad reciente' : 'Recent activity'}: +${health.breakdown.throughput}\n${locale==='es' ? 'PenalizaciÃƒÆ’Ã‚Â³n por bloqueos' : 'Blocker penalty'}: ${health.breakdown.blockerPenalty}"><span class="health-dot" style="background:${health.color}"></span>${health.score} Ãƒâ€šÃ‚Â· ${healthLabel}</span>`
+		? `<span class="health-badge health-tooltip" style="background:${health.color}22;color:${health.color}" data-tooltip="${locale==='es' ? 'Completadas' : 'Completion'}: +${health.breakdown.completion}\n${locale==='es' ? 'Tasa de éxito' : 'Success rate'}: +${health.breakdown.successRate}\n${locale==='es' ? 'Actividad reciente' : 'Recent activity'}: +${health.breakdown.throughput}\n${locale==='es' ? 'Penalización por bloqueos' : 'Blocker penalty'}: ${health.breakdown.blockerPenalty}"><span class="health-dot" style="background:${health.color}"></span>${health.score} · ${healthLabel}</span>`
 		: '';
 
 	return notice + `<div class="stats-bar">
@@ -604,11 +603,11 @@ function statsBar(prd: Prd, cfg: BoardConfig): string {
     ${runnerBtn}
     <button class="btn btn-sm btn-github" data-action="pushToGitHub" title="${locale==='es'?'Subir a GitHub':'Push to GitHub'}">${s.pushGithub}</button>
     <button class="btn btn-sm btn-github" data-action="syncFromGitHub" title="${locale==='es'?'Sincronizar desde GitHub':'Sync from GitHub'}">${s.syncGithub}</button>
-    <button class="btn btn-sm btn-add" data-action="showAddIssue" title="${locale==='es'?'AÃƒÆ’Ã‚Â±adir nuevo issue':'Add new issue'}">${s.addIssue}</button>
-    <button class="btn btn-sm btn-add" data-action="addFromChat" title="${locale==='es'?'AÃƒÆ’Ã‚Â±adir vÃƒÆ’Ã‚Â­a Chat':'Add via Chat'}">${s.addChat}</button>
+    <button class="btn btn-sm btn-add" data-action="showAddIssue" title="${locale==='es'?'Añadir nuevo issue':'Add new issue'}">${s.addIssue}</button>
+    <button class="btn btn-sm btn-add" data-action="addFromChat" title="${locale==='es'?'Añadir vía Chat':'Add via Chat'}">${s.addChat}</button>
     <button class="btn btn-sm" data-action="openPrd" title="${locale==='es'?'Editar prd.json':'Edit prd.json'}">${s.openPrd}</button>
     <button class="btn btn-sm" data-action="openMemories">${s.openMemory}</button>
-    <button class="btn btn-sm btn-optimize" data-action="optimizeMemory" title="${locale==='es'?'Optimizar memories.md ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â comprimir y eliminar duplicados':'Optimize memories.md ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â compress and remove duplicates'}">${s.optimize}</button>
+    <button class="btn btn-sm btn-optimize" data-action="optimizeMemory" title="${locale==='es'?'Optimizar memories.md — comprimir y eliminar duplicados':'Optimize memories.md — compress and remove duplicates'}">${s.optimize}</button>
     <button class="btn btn-sm" data-action="importPlan" title="${locale==='es'?'Importar o anexar desde Plan':'Import or append from Plan'}">${s.plan}</button>
     <button class="btn btn-sm btn-setup" data-action="setupProject" title="${locale==='es'?'Generar AGENTS.md y docs/':'Generate AGENTS.md and docs/'}">${s.agents}</button>
     <button class="btn btn-sm" data-action="openSettings">${s.settings}</button>
@@ -620,10 +619,10 @@ function statsBar(prd: Prd, cfg: BoardConfig): string {
 function guardrailsPanel(guardrails: string[], boundaries: string[]): string {
 	if (!guardrails.length && !boundaries.length) { return ''; }
 	return `<details class="guardrails-panel">
-  <summary>ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂºÃ‚Â¡ Guardrails & Boundaries</summary>
+  <summary>🛡 Guardrails & Boundaries</summary>
   <div class="guardrails-body">
-    ${guardrails.length ? `<div class="guardrails-section"><div class="guardrails-label">Rules</div>${guardrails.map(g=>`<div class="guardrail-item">ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ ${esc(g)}</div>`).join('')}</div>` : ''}
-    ${boundaries.length ? `<div class="guardrails-section"><div class="guardrails-label">Never touch</div>${boundaries.map(b=>`<div class="guardrail-item boundary-item">ÃƒÂ°Ã…Â¸Ã…Â¡Ã‚Â« ${esc(b)}</div>`).join('')}</div>` : ''}
+    ${guardrails.length ? `<div class="guardrails-section"><div class="guardrails-label">Rules</div>${guardrails.map(g=>`<div class="guardrail-item">• ${esc(g)}</div>`).join('')}</div>` : ''}
+    ${boundaries.length ? `<div class="guardrails-section"><div class="guardrails-label">Never touch</div>${boundaries.map(b=>`<div class="guardrail-item boundary-item">🚫 ${esc(b)}</div>`).join('')}</div>` : ''}
     <button class="btn btn-sm" data-action="openSettings" style="margin-top:6px">Edit in settings</button>
   </div>
 </details>`;
@@ -631,7 +630,7 @@ function guardrailsPanel(guardrails: string[], boundaries: string[]): string {
 
 function memoriesPanel(memories: string): string {
 	return `<details class="memories-panel">
-  <summary>ÃƒÂ°Ã…Â¸Ã‚Â§Ã‚Â  Project Memory <span class="mem-hint">(edit in .agent/memories.md)</span></summary>
+  <summary>🧠 Project Memory <span class="mem-hint">(edit in .agent/memories.md)</span></summary>
   <pre class="memories-content">${esc(memories)}</pre>
 </details>`;
 }
@@ -639,7 +638,7 @@ function memoriesPanel(memories: string): string {
 function emptyState(locale: Locale = 'en', hasEmptyPrd = false): string {
 	const s = t(locale);
 	return `<div class="empty-state">
-  <div class="empty-icon">ÃƒÂ°Ã…Â¸Ã…Â¡Ã¢â€šÂ¬</div>
+  <div class="empty-icon">🚀</div>
   <div class="empty-title">${hasEmptyPrd ? s.emptyNoIssues : s.emptyNoPrd}</div>
   <div class="empty-sub">${hasEmptyPrd ? s.emptyNoIssuesSub : s.emptyNoPrdSub}</div>
   <div style="display:flex;gap:8px;margin-top:8px">
