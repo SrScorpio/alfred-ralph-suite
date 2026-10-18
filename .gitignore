@@ -1,0 +1,23 @@
+node_modules/
+dist/
+.vscode-test/
+out/
+*.js.map
+*.vsix
+
+# tsc emit that landed next to sources (outDir is dist/)
+src/**/*.js
+compiled/
+_p13.py
+_patch_*.py
+_t.py
+_watch.js
+
+# Ralph Suite runtime state (do not commit)
+.ralph/
+src/.DS_Store
+.DS_Store
+.agent/
+memories.md
+prd.json
+

@@ -1,0 +1,30 @@
+export function buildAnalyzeExistingProjectPrompt(roots: string[]): string {
+  const list = (roots.length ? roots : ['(no workspace folder)']).map((root, index) => index + '. ' + root.replace(/\\/g, '/')).join('\n');
+  return [
+    '## Analyze existing project',
+    'You are reconstructing a Ralph Suite backlog for a project that is already in progress.',
+    'Do not ask the user to re-explain the product. Inspect the selected folders and cite evidence.',
+    '',
+    '## Selected folders',
+    list,
+    '',
+    '## Sources to inspect (only if they exist)',
+    '- README.md, CHANGELOG.md, AGENTS.md, docs/',
+    '- GitHub issues/PRs when a git remote exists',
+    '- Local runtime `.ralph/task-*-status` and logs',
+    '- Existing conversations or notes only if a tool can actually read them; never invent chat history',
+    '',
+    '## Rules',
+    '- Do NOT modify prd.json if it already exists. Abort and explain.',
+    '- Do NOT invent requirements, completed work, or GitHub issue numbers.',
+    '- Local Ralph IDs stay local; GitHub references use owner/repo#N. Never infer GitHub #N from a local ID.',
+    '- New issue ids MUST be ISSUE-NNN (padding 3), e.g. ISSUE-001. Never use numeric-only ids (1, 001) or the key "tasks".',
+    '- Write the backlog only at docs/ralph/prd.json (legacy root prd.json if that layout is already in use).',
+    'Write valid JSON at docs/ralph/prd.json with shape:',
+    '{ "project": "...", "description": "...", "version": "1.0.0", "issues": [{ "id": "ISSUE-001", "title": "...", "description": "...", "priority": "P2", "status": "todo", "acceptanceCriteria": [], "dependencies": [], "labels": [] }] }',
+    'Use the key "issues" (not tasks). If docs/ralph/prd.json already exists with an empty issues array, fill that file; do not create a second prd.json at the workspace root.',
+    '- If evidence of in-progress work exists, reconstruct tasks with acceptance criteria and source citations.',
+    '- If there is not enough evidence, create exactly one todo task titled "Definir el siguiente requerimiento" asking the user what to build next.',
+    '- Do not mark work completed without a local status file or an explicit user confirmation.',
+  ].join('\n');
+}
