@@ -6,6 +6,22 @@ All notable changes to Ralph Suite are documented here.
 
 ## [Unreleased]
 
+- Nada pendiente.
+
+## [1.12.3] - 2026-10-20
+
+### Added
+- Comando `Alfred: Actualizar estado` (alfred-ralph.refreshStatus): refresca tablero y arbol lateral, independiente de syncIssue.
+- Auto Run: distingue ejecucion viva de marcador `inprogress` huerfano; recuperacion con confirmacion y limpieza en abort; sin duplicados. PR #25.
+- `docs/project/` (status, architecture, threat-model, compliance) creado desde plantillas; `plans/` retirado con migracion documentada. PR #26.
+- Skill `project-docs`: mapa de capas de memoria, identificadores y forma de trabajar; renombrado `docs/issues` -> `docs/stories`. PR #26/#27.
+- Guia de tests (`docs/test/README.md`) y skill `create-tests` (regla de oro, Playwright default E2E). PR #28.
+- ADR-019 (sesion/paralelismo/permisos), ADR-020 (modelo de memoria, memories->status, SQLite descartado), ADR-021 (ODD mixto); plantilla `odd-feature.md`; fichas junior-dev, qa-engineer, alfred, product-owner y tech-writer actualizadas; plantilla status con Lessons/Gaps. PR #29.
+
+### Fixed
+- ADR-019/PR #25 precisan el limite de tareas por ciclo: `ralph-suite.maxLoops` (default 5, maximo 50).
+
+
 ## [1.12.2] - 2026-10-18
 
 ### Added

@@ -2,7 +2,7 @@
   "name": "alfred-ralph-suite",
   "displayName": "Alfred Ralph Suite",
   "description": "Equipo de agentes Alfred Dev y tablero Ralph en una sola extensión: backlog, runner y quality gates sin dos instalaciones.",
-  "version": "1.12.2",
+  "version": "1.12.3",
   "publisher": "SrScorpio",
   "engines": {
     "vscode": "^1.103.0"

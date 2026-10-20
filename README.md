@@ -21,7 +21,7 @@ Una extension. El equipo de Alfred Dev y el tablero de Ralph, sin preguntarte cu
 npm install
 npm run compile
 npm run package
-code --install-extension alfred-ralph-suite-1.12.2.vsix
+code --install-extension alfred-ralph-suite-1.12.3.vsix
 ```
 
 Despues, paleta de comandos, Developer: Reload Window.
