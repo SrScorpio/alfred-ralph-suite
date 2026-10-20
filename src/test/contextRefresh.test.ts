@@ -42,17 +42,16 @@ const SAMPLE_PRD: Prd = {
 	issues: [SAMPLE_TASK],
 };
 
-// ── Helper: create temp workspace with memories.md ───────────────────────────
+// ── Helper: create temp workspace with docs/project/status.md (ADR-020) ──────
 
-function createTempWorkspace(memoriesContent?: string): string {
+function createTempWorkspace(statusContent?: string): string {
 	const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ralph-test-'));
 
-	// Create .agent/memories.md
-	const agentDir = path.join(tmpDir, '.agent');
-	fs.mkdirSync(agentDir, { recursive: true });
-
-	if (memoriesContent) {
-		fs.writeFileSync(path.join(agentDir, 'memories.md'), memoriesContent, 'utf-8');
+	// ADR-020: la memoria del proyecto es docs/project/status.md
+	if (statusContent) {
+		const statusDir = path.join(tmpDir, 'docs', 'project');
+		fs.mkdirSync(statusDir, { recursive: true });
+		fs.writeFileSync(path.join(statusDir, 'status.md'), statusContent, 'utf-8');
 	}
 
 	// Create .ralph/ directory

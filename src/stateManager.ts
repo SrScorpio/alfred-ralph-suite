@@ -173,10 +173,9 @@ export class RalphStateManager {
 		if (filesChanged) { log.filesChanged = filesChanged; }
 		fs.writeFileSync(logFile, JSON.stringify(log, null, 2), 'utf-8');
 
-		// Append to memories.md
-		if (summary) {
-			this.appendMemory(root, log, configuredMemoriesPath);
-		}
+		// ADR-020: el runtime solo escribe .ralph/; el conocimiento vive en
+		// docs/project/status.md y lo cura tech-writer. No se toca memories.md.
+		void configuredMemoriesPath;
 	}
 
 	static setFailed(root: string, id: string, reason?: string) {
@@ -280,8 +279,9 @@ export class RalphStateManager {
 
 			fs.writeFileSync(lp, JSON.stringify(log, null, 2), 'utf-8');
 
-			// Append to memories.md
-			this.appendMemory(root, log, configuredMemoriesPath);
+			// ADR-020: la nota queda en .ralph/task-*-log.json; no se escribe
+			// memories.md desde el runtime.
+			void configuredMemoriesPath;
 
 			// Delete the signal file — it's been consumed
 			fs.unlinkSync(np);
@@ -310,7 +310,10 @@ export class RalphStateManager {
 		return logs.sort((a, b) => a.startedAt.localeCompare(b.startedAt));
 	}
 
-	// ── Memories ─────────────────────────────────────────────────────────────
+	// ── Memories (legacy, ADR-020) ─────────────────────────────────────────────
+	// El runtime ya no escribe .agent/memories.md (ADR-020): la memoria vive en
+	// docs/project/status.md. Este método se conserva como utilidad legacy para
+	// pruebas y para el historial de promoción de notas; nada del runtime lo llama.
 	static appendMemory(root: string, log: TaskLog, configuredMemoriesPath?: string) {
 		const mp = this.memoriesPath(root, configuredMemoriesPath);
 		const ad = path.dirname(mp);
@@ -338,34 +341,74 @@ export class RalphStateManager {
 		fs.writeFileSync(mp, appendToMemorySection(content, promoted.kind, entry.split('\n')), 'utf-8');
 	}
 
+	/**
+	 * ADR-020: ya no se crea .agent/memories.md. Si el fichero legacy existe en
+	 * el proyecto no se toca; su contenido se migra a docs/project/status.md con
+	 * `migrateMemories` (una sola pasada, con confirmación del maintainer).
+	 */
 	static initMemories(root: string, projectGoal: string, configuredMemoriesPath?: string) {
-		const mp = this.memoriesPath(root, configuredMemoriesPath);
-		if (fs.existsSync(mp)) { return; }
-		const dir = path.dirname(mp);
-		if (!fs.existsSync(dir)) { fs.mkdirSync(dir, { recursive: true }); }
-		const content = [
-			'# Project Memories',
-			'',
-			'> Auto-updated by Ralph Suite on task completion.',
-			'> Edit freely — this file is committed to git.',
-			'> Sections are injected intelligently by the context injector (ADR-002).',
-			'',
-			'## Project',
-			`- Goal: ${projectGoal}`,
-			`- Created: ${new Date().toISOString().slice(0, 10)}`,
-			'',
-			'## Conventions',
-			'- (add project-specific rules here)',
-			'',
-			'## Decisions',
-			'- (document architectural decisions here — only injected when relevant)',
-			'',
-			'## Known Issues',
-			'- (document recurring problems here)',
-			'',
-			'## Completed Tasks',
-			'',
-		].join('\n');
-		fs.writeFileSync(mp, content, 'utf-8');
+		void root; void projectGoal; void configuredMemoriesPath;
 	}
+
+	// ── Status.md: única memoria del proyecto (ADR-020) ────────────────────────
+	static statusMdPath(root: string): string {
+		return path.join(root, 'docs', 'project', 'status.md');
+	}
+
+	private static statusMdTemplate(): string {
+		// Plantilla de referencia del catálogo: viaja en el VSIX junto al código.
+		const candidates = [
+			path.join(__dirname, '..', 'catalog', 'templates', 'status.md'),
+			path.join(__dirname, '..', '..', 'catalog', 'templates', 'status.md'),
+		];
+		for (const candidate of candidates) {
+			if (fs.existsSync(candidate)) { return fs.readFileSync(candidate, 'utf-8'); }
+		}
+		return '# Estado del flujo — Proyecto\n\n> Snapshot local duplicado desde GitHub Issues y PRs (ADR-020).\n';
+	}
+
+	static migrateMemories(root: string, memoriesPath?: string): MemoryMigrationResult {
+		const statusAbsPath = this.statusMdPath(root);
+		// Misma contención que memoriesPath: si el origen configurado cae fuera
+		// del workspace, se resuelve al fallback interno (o lanza si tampoco cabe).
+		const mp = this.memoriesPath(root, memoriesPath);
+		if (!fs.existsSync(mp)) {
+			return { migrated: false, statusPath: statusAbsPath, lines: 0 };
+		}
+		const memoryContent = fs.readFileSync(mp, 'utf-8').trim();
+		if (!memoryContent) {
+			return { migrated: false, statusPath: statusAbsPath, lines: 0 };
+		}
+
+		let statusContent: string;
+		if (fs.existsSync(statusAbsPath)) {
+			statusContent = fs.readFileSync(statusAbsPath, 'utf-8');
+		} else {
+			fs.mkdirSync(path.dirname(statusAbsPath), { recursive: true });
+			statusContent = this.statusMdTemplate().replace(/\r\n/g, '\n');
+		}
+		if (!statusContent.endsWith('\n')) { statusContent += '\n'; }
+
+		const heading = '## Conocimiento migrado (memories.md)';
+		if (statusContent.includes(heading)) { return { migrated: false, statusPath: statusAbsPath, lines: 0, alreadyMigrated: true }; }
+		const merged = `${statusContent}\n${heading}\n\n${memoryContent}\n`;
+		fs.writeFileSync(statusAbsPath, merged, 'utf-8');
+
+		return {
+			migrated: true,
+			statusPath: statusAbsPath,
+			lines: memoryContent.split(/\r?\n/).length,
+		};
+	}
+}
+
+export interface MemoryMigrationResult {
+	/** true si ya exist?a la secci?n migrada y no se volvi? a fusionar */
+	alreadyMigrated?: boolean;
+	/** true cuando había contenido en memories.md y se fusionó en status.md */
+	migrated: boolean;
+	/** ruta absoluta de docs/project/status.md */
+	statusPath: string;
+	/** líneas migradas (0 si no había nada que migrar) */
+	lines: number;
 }

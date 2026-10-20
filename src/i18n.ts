@@ -52,6 +52,7 @@ export interface UIStrings {
 	menuAddIssue: string;
 	menuOpenPrd: string;
 	menuMemories: string;
+	menuMigrateMemories: string;
 	menuOptimize: string;
 	menuSetup: string;
 	menuAnalyze: string;
@@ -66,6 +67,7 @@ export interface UIStrings {
 	menuDescAddIssue: string;
 	menuDescOpenPrd: string;
 	menuDescMemories: string;
+	menuDescMigrateMemories: string;
 	menuDescOptimize: string;
 	menuDescSetup: string;
 	menuInitProject: string;
@@ -158,6 +160,7 @@ const en: UIStrings = {
 	menuAddIssue: 'Add Issue',
 	menuOpenPrd: 'Open PRD',
 	menuMemories: 'Memories',
+	menuMigrateMemories: 'Migrate Memories to status.md',
 	menuOptimize: 'Optimize Memory',
 	menuSetup: 'Setup Project',
 	menuInitProject: 'Start New Project',
@@ -172,7 +175,8 @@ const en: UIStrings = {
 	menuDescRunNext: 'Run the next pending task',
 	menuDescAddIssue: 'Add a new issue to prd.json',
 	menuDescOpenPrd: 'Open prd.json in editor',
-	menuDescMemories: 'Open .agent/memories.md',
+	menuDescMemories: 'Open docs/project/status.md',
+	menuDescMigrateMemories: 'Merge legacy .agent/memories.md into docs/project/status.md (ADR-020)',
 	menuDescOptimize: 'Compress and deduplicate memories.md',
 	menuDescSetup: 'Generate or regenerate AGENTS.md and docs/',
 	menuDescInitProject: 'Describe a goal and generate a PRD',
@@ -252,6 +256,7 @@ const es: UIStrings = {
 	menuAddIssue: 'Añadir issue',
 	menuOpenPrd: 'Abrir PRD',
 	menuMemories: 'Memorias',
+	menuMigrateMemories: 'Migrar memorias a status.md',
 	menuOptimize: 'Optimizar memoria',
 	menuSetup: 'Configurar proyecto',
 	menuInitProject: 'Iniciar proyecto nuevo',
@@ -266,7 +271,8 @@ const es: UIStrings = {
 	menuDescRunNext: 'Ejecutar la siguiente tarea pendiente',
 	menuDescAddIssue: 'Añadir un issue nuevo a prd.json',
 	menuDescOpenPrd: 'Abrir prd.json en el editor',
-	menuDescMemories: 'Abrir .agent/memories.md',
+	menuDescMemories: 'Abrir docs/project/status.md',
+	menuDescMigrateMemories: 'Fusionar el .agent/memories.md legacy en docs/project/status.md (ADR-020)',
 	menuDescOptimize: 'Comprimir y deduplicar memories.md',
 	menuDescSetup: 'Generar o regenerar AGENTS.md y docs/',
 	menuDescInitProject: 'Describe un objetivo y genera un PRD',

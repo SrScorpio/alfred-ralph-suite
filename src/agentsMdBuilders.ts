@@ -44,7 +44,7 @@ ${guardrailList}
 ${checkpointList}
 
 ## Before starting any task, read:
-- \`.agent/memories.md\` — accumulated project knowledge
+- \`docs/project/status.md\` — project state and accumulated knowledge (ADR-020)
 - \`docs/project/architecture.md\` — architecture decisions
 - \`docs/project/threat-model.md\` — security requirements
 - \`docs/adr/\` — decision log
@@ -88,7 +88,7 @@ export function buildCopilotInstructions(project: string, stack: string): string
 - Ad hoc, analysis, review, documentation, and handoff work does not require an ID or .ralph signals. A Ralph execution without explicit task ID and workspace root must request that context.
 
 ## Critical Rules
-1. Read \`.agent/memories.md\` before starting any task
+1. Read \`docs/project/status.md\` before starting any task (ADR-020)
 2. Follow conventions already in the codebase
 3. Tests required for new features
 4. Never commit secrets — use environment variables
@@ -222,7 +222,7 @@ ${guardrailList}
 ${checkpointList}
 
 ## Before starting any task, read:
-- .agent/memories.md
+- docs/project/status.md
 - docs/project/architecture.md
 - docs/project/threat-model.md
 - docs/adr/

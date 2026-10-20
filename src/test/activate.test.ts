@@ -51,6 +51,26 @@ describe('activation command guards', () => {
 		));
 	});
 
+	it('registra migrateMemories en paleta y nls, y marca deprecated los ajustes de memories (ADR-020)', () => {
+		const packageJson = JSON.parse(fs.readFileSync(path.join(__dirname, '../../package.json'), 'utf8'));
+		const nls = JSON.parse(fs.readFileSync(path.join(__dirname, '../../package.nls.json'), 'utf8'));
+		const nlsEs = JSON.parse(fs.readFileSync(path.join(__dirname, '../../package.nls.es.json'), 'utf8'));
+
+		assert.ok(packageJson.contributes.commands.some((command: { command: string }) =>
+			command.command === 'ralph-suite.migrateMemories'
+		));
+		assert.ok(packageJson.contributes.menus.commandPalette.some((entry: { command: string }) =>
+			entry.command === 'ralph-suite.migrateMemories'
+		));
+		assert.ok(nls['command.migrateMemories.title']);
+		assert.ok(nlsEs['command.migrateMemories.title']);
+
+		for (const key of ['config.memoriesPath.description', 'config.memoryOptimizeEvery.description', 'config.memoryOptimizeReview.description']) {
+			assert.match(nls[key], /Deprecated since 1\.12\.4/);
+			assert.match(nlsEs[key], /Obsoleto desde 1\.12\.4/);
+		}
+	});
+
 	it('refresca el tablero y el árbol local sin ejecutar syncIssue', async () => {
 		const originalRefresh = KanbanPanel.refresh;
 		const originalRegisterTree = vscode.window.registerTreeDataProvider;
@@ -106,6 +126,7 @@ describe('activation command guards', () => {
 				'ralph-suite.openKanban', 'ralph-suite.startRunner', 'ralph-suite.stopRunner',
 				'ralph-suite.setupProject', 'ralph-suite.initProject', 'ralph-suite.analyzeProject', 'ralph-suite.optimizeMemory',
 				'ralph-suite.runTask', 'ralph-suite.markDone', 'ralph-suite.resetTask', 'ralph-suite.syncIssue',
+				'ralph-suite.migrateMemories',
 			]) {
 				await capture.handlers.get(command)?.('TASK', 'completed');
 			}

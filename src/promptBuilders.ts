@@ -100,8 +100,9 @@ export function resolveAgentProfile(task: any, cfg: vscode.WorkspaceConfiguratio
 
 // ── Memory loader ────────────────────────────────────────────────────────────
 
-function loadMemory(root: string, configuredPath: string = '.agent/memories.md'): string | null {
-	const p = RalphStateManager.memoriesPath(root, configuredPath);
+function loadMemory(root: string, _configuredPath?: string): string | null {
+	// ADR-020: la memoria es docs/project/status.md; el legacy memories.md no se inyecta.
+	const p = RalphStateManager.statusMdPath(root);
 	if (!fs.existsSync(p)) { return null; }
 	return fs.readFileSync(p, 'utf-8').trim() || null;
 }

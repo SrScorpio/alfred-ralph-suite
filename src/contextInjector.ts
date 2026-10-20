@@ -2,7 +2,10 @@
  * contextInjector.ts — ISSUE-002 Task context injection inteligente
  *
  * Implements ADR-002: Section-based memory injection to reduce context size
- * and improve prompt relevance.
+ * and improve prompt relevance. Since ADR-020 the knowledge source is
+ * docs/project/status.md (the only project memory file); a legacy
+ * .agent/memories.md is never injected — it is migrated with the
+ * ralph-suite.migrateMemories command.
  *
  * Sections:
  *   - Core:         Always injected (project goal, stack, key facts)
@@ -33,7 +36,7 @@ export interface InjectionResult {
 	decisionsReason: string | null;
 }
 
-// ── Section names (h2-level in memories.md) ──────────────────────────────────
+// ── Section names (h2-level in docs/project/status.md) ──────────────────────
 
 const SECTION_CORE = 'Project';
 const SECTION_CONVENTIONS = 'Conventions';
@@ -49,6 +52,19 @@ const ALL_SECTIONS = [
 	SECTION_TASK_HISTORY,
 	SECTION_KNOWN_ISSUES,
 ];
+
+// ── status.md aliases (ADR-020 template headings) ────────────────────────────
+// catalog/templates/status.md headings mapped onto the injection roles. The
+// migrated legacy section `## Conocimiento migrado (memories.md)` keeps its own
+// `## Project`/`## Conventions`/... sub-headings, which parseMemorySections
+// already picks up as sections.
+
+const STATUS_ALIASES: Record<string, string[]> = {
+	[SECTION_CORE]: ['Flujo activo'],
+	[SECTION_KNOWN_ISSUES]: ['Bloqueos'],
+	[SECTION_DECISIONS]: ['Lessons aprendidas'],
+	[SECTION_TASK_HISTORY]: ['Historial de gates'],
+};
 
 // ── Parsing ──────────────────────────────────────────────────────────────────
 
@@ -164,9 +180,11 @@ export function injectContext(
 ): InjectionResult {
 	const sections = parseMemorySections(memoriesContent);
 
-	// Helper: find section by name (fuzzy match)
-	const findSection = (name: string): MemorySection | undefined =>
-		sections.find(s => s.name.toLowerCase() === name.toLowerCase());
+	// Helper: find section by name (fuzzy match), including status.md aliases
+	const findSection = (name: string): MemorySection | undefined => {
+		const aliases = [name, ...(STATUS_ALIASES[name] ?? [])].map(a => a.toLowerCase());
+		return sections.find(s => aliases.includes(s.name.toLowerCase()));
+	};
 
 	// Helper: find section containing a keyword
 	const findSectionContaining = (keyword: string): MemorySection | undefined =>
@@ -233,8 +251,10 @@ export function injectContext(
 // ── High-level API ───────────────────────────────────────────────────────────
 
 /**
- * Load memories.md from disk and inject relevant sections for a task.
- * Returns null if the file doesn't exist.
+ * Load docs/project/status.md from disk and inject relevant sections for a
+ * task (ADR-020: status.md is the only project memory). Returns null if the
+ * file doesn't exist or is empty. A legacy .agent/memories.md is NEVER read
+ * here; it is migrated with ralph-suite.migrateMemories.
  */
 export function loadAndInjectContext(
 	workspaceRoot: string,
@@ -242,13 +262,13 @@ export function loadAndInjectContext(
 	taskDependencies: string[],
 	taskLabels: string[] = [],
 	taskEpic?: string,
-	configuredMemoriesPath: string = '.agent/memories.md'
+	_configuredMemoriesPath?: string
 ): InjectionResult | null {
-	const memoriesPath = RalphStateManager.memoriesPath(workspaceRoot, configuredMemoriesPath);
-	if (!fs.existsSync(memoriesPath)) {
+	const statusPath = RalphStateManager.statusMdPath(workspaceRoot);
+	if (!fs.existsSync(statusPath)) {
 		return null;
 	}
-	const content = fs.readFileSync(memoriesPath, 'utf-8').trim();
+	const content = fs.readFileSync(statusPath, 'utf-8').trim();
 	if (!content) {
 		return null;
 	}

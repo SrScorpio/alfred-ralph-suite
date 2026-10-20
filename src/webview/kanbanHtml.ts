@@ -607,7 +607,7 @@ function statsBar(prd: Prd, cfg: BoardConfig): string {
     <button class="btn btn-sm btn-add" data-action="addFromChat" title="${locale==='es'?'Añadir vía Chat':'Add via Chat'}">${s.addChat}</button>
     <button class="btn btn-sm" data-action="openPrd" title="${locale==='es'?'Editar prd.json':'Edit prd.json'}">${s.openPrd}</button>
     <button class="btn btn-sm" data-action="openMemories">${s.openMemory}</button>
-    <button class="btn btn-sm btn-optimize" data-action="optimizeMemory" title="${locale==='es'?'Optimizar memories.md — comprimir y eliminar duplicados':'Optimize memories.md — compress and remove duplicates'}">${s.optimize}</button>
+    <button class="btn btn-sm btn-optimize" data-action="optimizeMemory" title="${locale==='es'?'Optimizar el memories.md legacy (ADR-020)':'Optimize legacy memories.md (ADR-020)'}">${s.optimize}</button>
     <button class="btn btn-sm" data-action="importPlan" title="${locale==='es'?'Importar o anexar desde Plan':'Import or append from Plan'}">${s.plan}</button>
     <button class="btn btn-sm btn-setup" data-action="setupProject" title="${locale==='es'?'Generar AGENTS.md y docs/':'Generate AGENTS.md and docs/'}">${s.agents}</button>
     <button class="btn btn-sm" data-action="openSettings">${s.settings}</button>
@@ -630,7 +630,7 @@ function guardrailsPanel(guardrails: string[], boundaries: string[]): string {
 
 function memoriesPanel(memories: string): string {
 	return `<details class="memories-panel">
-  <summary>🧠 Project Memory <span class="mem-hint">(edit in .agent/memories.md)</span></summary>
+  <summary>🧠 Project Memory <span class="mem-hint">(edit in docs/project/status.md)</span></summary>
   <pre class="memories-content">${esc(memories)}</pre>
 </details>`;
 }
