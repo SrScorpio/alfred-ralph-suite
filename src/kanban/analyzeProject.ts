@@ -26,5 +26,7 @@ export function buildAnalyzeExistingProjectPrompt(roots: string[]): string {
     '- If evidence of in-progress work exists, reconstruct tasks with acceptance criteria and source citations.',
     '- If there is not enough evidence, create exactly one todo task titled "Definir el siguiente requerimiento" asking the user what to build next.',
     '- Do not mark work completed without a local status file or an explicit user confirmation.',
+    '- When you create docs/ralph/prd.json for the first time, also create docs/project/status.md if it does not exist: use the reference template (catalog/templates/status.md of the extension) with the project name and today date, and the note "Sin issues publicadas todavia" in the Issues section.',
+    '- NEVER modify an existing docs/project/status.md; it belongs to tech-writer (ADR-020).',
   ].join('\n');
 }

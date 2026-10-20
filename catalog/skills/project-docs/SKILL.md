@@ -79,6 +79,14 @@ migra a `docs/` con confirmación del maintainer; no se crea nada nuevo en
    `status.md` ↔ board; divergencia → `tech-writer` sincroniza; la gate no se
    cierra hasta reconciliar.
 
+## Si falta una skill
+
+Si una convencion que repites no esta cubierta por las skills instaladas,
+propon crearla: `SKILL.md` con frontmatter disparador y cuerpo minimo, o
+instalar la que exista. Las skills de stack de terceros no se adoptan sin
+decision explicita. Una skill solo paga su descripcion hasta invocarse
+(carga progresiva): manten las descripciones como disparadores cortos.
+
 ## Qué NO hacer
 
 - No escribas `status.md` si no eres `tech-writer`; ni `prd.json` sin

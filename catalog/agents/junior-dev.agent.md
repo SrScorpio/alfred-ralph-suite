@@ -154,6 +154,8 @@ Cuando el repo tiene remoto en `origin`:
 
 Si no hay remoto, o fallan MCP y `gh`: commits locales y lo dices en el reporte. No finjas un PR que no existe. No actualices `docs/project/status.md`: el estado vive en GitHub y el snapshot local lo escribe `tech-writer`.
 
+Convencion repetida sin skill que la cubra: propon crearla; no la reimprovises en cada tarea.
+
 ## Qué NO hacer
 
 - No tomar decisiones de arquitectura (eso es del architect y senior-dev).
