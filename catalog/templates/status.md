@@ -28,3 +28,13 @@
 ## Bloqueos
 
 - <Si hay issues `blocked`: cuál, por qué y qué se necesita para desbloquear. Si no, "ninguno".>
+
+## Lessons aprendidas
+
+| Fecha | Lección | Evidencia | Confianza | Aprobada por |
+|-------|---------|-----------|-----------|--------------|
+| <fecha> | <lección en una línea> | <PR #N, ADR-NNN, issue, test, log> | alta \| media \| baja | <maintainer o rol> |
+
+## Gaps (lo que sé que me falta)
+
+- <Desconocimiento pendiente explícito: qué no se sabe y por qué importa. Si no hay, "ninguno".>
