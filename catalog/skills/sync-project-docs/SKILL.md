@@ -1,26 +1,30 @@
 ---
 name: sync-project-docs
-description: "Usar para sincronizar la documentación viva después de una fase. También: actualizar docs/project, plans/, status.md, architecture, compliance, threat-model."
+description: "Usar para sincronizar la documentación viva después de una fase. También: actualizar docs/project, status.md, architecture, compliance, threat-model."
 ---
 
 # Sincronizar documentación viva
 
 Esta skill la usa `tech-writer`. Alfred no la ejecuta: no tiene `edit`.
 
-Tras una fase, actualiza **solo lo que ha cambiado**. Si el proyecto usa
-`plans/` u otra convención, respétala: no crees `docs/` en paralelo.
+Tras una fase, actualiza **solo lo que ha cambiado**. La convención es `docs/`;
+si el proyecto trae `plans/`, su contenido se migra a `docs/` con confirmación
+del maintainer y no se crea nada nuevo en `plans/`.
+
+El mapa completo del modelo (capas, dueños, alta de trabajo) está en la skill
+`project-docs`.
 
 ## Proceso
 
-1. **Lee el mapa actual.** `docs/project/status.md`, `docs/prd/`, `docs/adr/`,
-   `plans/` si existe. No inventes ficheros que el proyecto no usa.
+1. **Lee el mapa actual.** `docs/project/status.md`, `docs/prd/`, `docs/adr/`.
+   No inventes ficheros que el proyecto no usa.
 
 2. **Actualiza lo de esta fase:**
 
    | Si en esta fase... | Actualiza |
    |--------------------|-----------|
-   | Hubo decisión de arquitectura | ADR + fila en architecture o `plans/decisiones.md` |
-   | Cambió la superficie de ataque | `threat-model.md` / `plans/seguridad.md` |
+   | Hubo decisión de arquitectura | ADR + fila en architecture |
+   | Cambió la superficie de ataque | `threat-model.md` |
    | Se evaluó una dependencia | `dependencies.md` |
    | Se tocó compliance | `compliance.md` |
    | Se cerró una gate | `docs/project/status.md` (fase, gate, siguiente acción, historial) |

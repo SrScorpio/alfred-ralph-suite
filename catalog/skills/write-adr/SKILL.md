@@ -33,8 +33,9 @@ Plantilla (en este orden; no hace falta el repo del plugin):
    ADR nuevo que apunte al anterior; no reescribas el viejo.
 
 4. **Índice.** Si existe `docs/adr/README.md` o `docs/project/architecture.md`,
-   añade una fila. Si el proyecto usa `plans/decisiones.md`, actualiza ese
-   fichero en vez de crear un índice paralelo.
+   añade una fila. Si el proyecto trae `plans/decisiones.md`, su contenido se
+   migra a `docs/adr/` con confirmación del maintainer; no se crea nada nuevo
+   en `plans/`.
 
 ## Criterios de éxito
 

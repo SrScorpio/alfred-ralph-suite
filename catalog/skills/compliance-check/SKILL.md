@@ -6,8 +6,9 @@ description: "Usar para verificar cumplimiento RGPD, NIS2 y CRA. También: verif
 # Verificación de cumplimiento normativo
 
 Evaluación **técnica** (no dictamen jurídico) contra RGPD, NIS2 y CRA.
-Destino: `docs/project/compliance.md` (o `plans/seguridad.md` si el proyecto
-ya concentra compliance ahí). Plantilla: la del proyecto, o
+Destino: `docs/project/compliance.md`; si el proyecto concentra compliance en
+`plans/seguridad.md`, su contenido se migra allí con confirmación del
+maintainer. Plantilla: la del proyecto, o
 `~/.copilot/alfred-dev/templates/compliance.md`, o `references/compliance.md`
 junto a esta skill.
 

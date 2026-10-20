@@ -31,7 +31,6 @@ const MUST_NOT_IGNORE = [
 	'AGENTS.md',
 	'.github/',
 	'docs/',
-	'plans/',
 	'src/',
 	'package.json',
 	'README.md',
