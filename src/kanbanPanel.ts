@@ -37,6 +37,7 @@ export class KanbanPanel {
 	private disposed   = false;
 	private runnerTimer: ReturnType<typeof setTimeout> | null = null;
 	private runnerAbortController: AbortController | null = null;
+	private static readonly activeTasks = new Set<string>();
 	private currentView: 'board' | 'epic' | 'history' = 'board';
 	private boardScope: BoardScope = 'folder';
 	private alfredEffective = false;
@@ -140,6 +141,23 @@ export class KanbanPanel {
 
 	static runnerSignal(): AbortSignal | undefined {
 		return KanbanPanel.current?.runnerAbortController?.signal;
+	}
+
+	static beginTask(root: string, id: string): void {
+		KanbanPanel.activeTasks.add(`${path.resolve(root)}::${id}`);
+	}
+
+	static endTask(root: string, id: string): void {
+		KanbanPanel.activeTasks.delete(`${path.resolve(root)}::${id}`);
+	}
+
+	static isTaskActive(root: string, id: string): boolean {
+		return KanbanPanel.activeTasks.has(`${path.resolve(root)}::${id}`);
+	}
+
+	static hasActiveTasks(root: string): boolean {
+		const prefix = `${path.resolve(root)}::`;
+		return Array.from(KanbanPanel.activeTasks).some(key => key.startsWith(prefix));
 	}
 
 	private shellLoaded = false;
@@ -368,16 +386,38 @@ export class KanbanPanel {
 			this.stopRunner();
 			return;
 		}
-		const prd = this.aggregatedPrd();
-		if (!prd) { this.haltRunner('no-prd'); return; }
-
-		const inProgress = prd.issues.find(i => i.status === 'inprogress');
-		if (inProgress) {
-			KanbanPanel.output?.appendLine(`[Runner] ${inProgress.id} still in progress — not starting another task`);
-			this.haltRunner('in-progress');
+		if (this.folders.some(folder => KanbanPanel.hasActiveTasks(folder.root))) {
+			this.scheduleNextTask(3000);
 			return;
 		}
-		const next = PrdManager.nextPending(prd, this.root);
+		const prd = this.aggregatedPrd();
+		if (!prd) { this.haltRunner('no-prd'); return; }
+		let eligiblePrd = prd;
+
+		const inProgress = prd.issues.find(issue => {
+			const root = this.folders.find(folder => folder.index === issue.folderIndex)?.root ?? this.root;
+			return issue.status === 'inprogress' || RalphStateManager.getStatus(root, issue.id) === 'inprogress';
+		});
+		if (inProgress) {
+			const taskRoot = this.folders.find(folder => folder.index === inProgress.folderIndex)?.root ?? this.root;
+			if (KanbanPanel.isTaskActive(taskRoot, inProgress.id)) {
+				KanbanPanel.output?.appendLine(`[Runner] ${inProgress.id} is active in this VS Code instance — not starting a duplicate`);
+				this.haltRunner('in-progress');
+				return;
+			}
+			const recover = await vscode.window.showWarningMessage(
+				`Task ${inProgress.id} is marked in progress but has no active run in this VS Code instance. Reset its runtime state and retry?`,
+				{ modal: true }, 'Recover and retry',
+			);
+			if (recover !== 'Recover and retry') { this.haltRunner('in-progress'); return; }
+			RalphStateManager.setTodoOverride(taskRoot, inProgress.id);
+			eligiblePrd = {
+				...prd,
+				issues: prd.issues.map(issue => issue === inProgress ? { ...issue, status: 'todo' } : issue),
+			};
+			KanbanPanel.output?.appendLine(`[Runner] Explicitly recovered stale in-progress marker for ${inProgress.id}`);
+		}
+		const next = PrdManager.nextPending(eligiblePrd, this.root);
 		if (!next) {
 			const locale = detectLocale() === 'es' ? 'es' : 'en';
 			vscode.window.showInformationMessage(pendingTasksMessage(

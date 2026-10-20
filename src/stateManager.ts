@@ -200,6 +200,11 @@ export class RalphStateManager {
 		// Keep log for history — don't delete it
 	}
 
+	static setTodoOverride(root: string, id: string): void {
+		this.ensure(root);
+		fs.writeFileSync(this.statusPath(root, id), 'todo', 'utf-8');
+	}
+
 	static getStatus(root: string, id: string): 'todo' | 'inprogress' | 'completed' | 'blocked' | 'failed' {
 		const p = this.statusPath(root, id);
 		if (!fs.existsSync(p)) { return 'todo'; }

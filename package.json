@@ -36,6 +36,10 @@
         "title": "Alfred: Ver progreso"
       },
       {
+        "command": "alfred-ralph.refreshStatus",
+        "title": "Alfred: Actualizar estado"
+      },
+      {
         "command": "alfred-ralph.pause",
         "title": "Alfred: Pausar trabajo"
       },
@@ -124,6 +128,9 @@
       "commandPalette": [
         {
           "command": "ralph-suite.openKanban"
+        },
+        {
+          "command": "alfred-ralph.refreshStatus"
         },
         {
           "command": "ralph-suite.showMenu"
