@@ -24,6 +24,7 @@ export const ALFRED_FLOWS: readonly AlfredPaletteAction[] = [
 
 export const ALFRED_CONTINUITY: readonly AlfredPaletteAction[] = [
 	{ id: 'progress', label: 'Ver progreso', prompt: '@alfred Reconstruye el progreso: issues y PRs de GitHub, y docs/project/status.md. No inventes estado.' },
+	{ id: 'verify', label: 'Verificar estado del proyecto', prompt: '@alfred Ejecuta la verificacion de estado (ADR-020): compara GitHub (issues+PRs y labels), docs/project/status.md y el board docs/ralph/prd.json en solo lectura. Emite tabla de divergencias (fuente | esperado | encontrado); ante divergencia, handoff a tech-writer para sincronizar el snapshot; no des la gate por cerrada hasta reconciliar. Offline (sin remoto o MCP y gh caidos): declaralo y status.md manda solo durante ese arranque. No implementes codigo.' },
 	{ id: 'pause', label: 'Pausar trabajo', prompt: '@alfred Pausa el trabajo actual: deja el handoff en la issue in-progress o en el snapshot. No implementes código.' },
 	{ id: 'retomar', label: 'Retomar trabajo', prompt: '@alfred Retoma el trabajo in-progress o in-review, o el snapshot local. No reinventes el flujo.' },
 ];

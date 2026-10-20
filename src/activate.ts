@@ -53,6 +53,10 @@ export function _doActivate(context: vscode.ExtensionContext, output: vscode.Out
 			sidebar.refresh();
 		}),
 
+		vscode.commands.registerCommand('alfred-ralph.verifyStatus', async () => {
+			const verify = ALFRED_CONTINUITY.find((item) => item.id === 'verify');
+			if (verify) await sendToChat(verify.prompt, { agent: 'alfred', fallbackMessage: 'Prompt copiado. Pegalo en el chat.' });
+		}),
 		vscode.commands.registerCommand('alfred-ralph.progress', async () => {
 			const action = ALFRED_CONTINUITY.find((item) => item.id === 'progress');
 			if (action) await sendToChat(action.prompt, { agent: 'alfred', fallbackMessage: 'Prompt copiado. Pegalo en el chat.' });

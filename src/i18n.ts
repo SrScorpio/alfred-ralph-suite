@@ -80,6 +80,7 @@ export interface UIStrings {
 	sidebarOpenMenu: string;
 	sidebarAskAlfred: string;
 	sidebarAskStatus: string;
+	sidebarVerify: string;
 	sidebarPauseWork: string;
 	sidebarResumeWork: string;
 	sidebarRefreshStatus: string;
@@ -191,6 +192,7 @@ const en: UIStrings = {
 	sidebarOpenMenu: 'Open menu',
 	sidebarAskAlfred: 'Talk to Alfred',
 	sidebarAskStatus: 'Ask Alfred about status',
+	sidebarVerify: 'Verify project status',
 	sidebarPauseWork: 'Pause work',
 	sidebarResumeWork: 'Resume work',
 	sidebarRefreshStatus: 'Refresh status',
@@ -292,6 +294,7 @@ const es: UIStrings = {
 	sidebarOpenMenu: 'Abrir menú',
 	sidebarAskAlfred: 'Hablar con Alfred',
 	sidebarAskStatus: 'Preguntar a Alfred por el estado',
+	sidebarVerify: 'Verificar estado del proyecto',
 	sidebarPauseWork: 'Pausar trabajo',
 	sidebarResumeWork: 'Retomar trabajo',
 	sidebarRefreshStatus: 'Actualizar estado',

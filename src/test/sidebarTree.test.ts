@@ -118,7 +118,7 @@ describe('Ralph Suite sidebar', () => {
 		for (const children of [empty.getChildren(), missing.getChildren()]) {
 			assert.deepStrictEqual(
 				children.filter(item => item.command).map(item => item.command?.command),
-				['alfred-ralph.openChat', 'alfred-ralph.progress', 'alfred-ralph.pause', 'alfred-ralph.retomar', 'alfred-ralph.refreshStatus', 'ralph-suite.openKanban', 'ralph-suite.runTask', 'ralph-suite.startRunner', 'ralph-suite.stopRunner', 'ralph-suite.showMenu'],
+				['alfred-ralph.openChat', 'alfred-ralph.progress', 'alfred-ralph.verifyStatus', 'alfred-ralph.pause', 'alfred-ralph.retomar', 'alfred-ralph.refreshStatus', 'ralph-suite.openKanban', 'ralph-suite.runTask', 'ralph-suite.startRunner', 'ralph-suite.stopRunner', 'ralph-suite.showMenu'],
 			);
 		}
 	});
@@ -126,9 +126,9 @@ describe('seccion Alfred en la Activity Bar', () => {
 	it('expone Hablar, Preguntar estado, Pausar, Retomar y Actualizar con comandos alfred-ralph', () => {
 		const strings = t(detectLocale());
 		const items = alfredActions(strings);
-		assert.strictEqual(items.length, 5);
+		assert.strictEqual(items.length, 6);
 		const commands = items.map(item => item.command && item.command.command);
-		assert.deepStrictEqual(commands, ['alfred-ralph.openChat', 'alfred-ralph.progress', 'alfred-ralph.pause', 'alfred-ralph.retomar', 'alfred-ralph.refreshStatus']);
+		assert.deepStrictEqual(commands, ['alfred-ralph.openChat', 'alfred-ralph.progress', 'alfred-ralph.verifyStatus', 'alfred-ralph.pause', 'alfred-ralph.retomar', 'alfred-ralph.refreshStatus']);
 		assert.ok(items.every(item => Boolean(item.iconPath)));
 	});
 });

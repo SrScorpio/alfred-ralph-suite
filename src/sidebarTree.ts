@@ -81,6 +81,7 @@ export function alfredActions(strings: UIStrings): RalphSidebarItem[] {
 	return [
 		new RalphSidebarItem(strings.sidebarAskAlfred, none, 'alfred-ralph.openChat', 'comment-discussion'),
 		new RalphSidebarItem(strings.sidebarAskStatus, none, 'alfred-ralph.progress', 'graph'),
+		new RalphSidebarItem(strings.sidebarVerify, none, 'alfred-ralph.verifyStatus', 'eye'),
 		new RalphSidebarItem(strings.sidebarPauseWork, none, 'alfred-ralph.pause', 'debug-pause'),
 		new RalphSidebarItem(strings.sidebarResumeWork, none, 'alfred-ralph.retomar', 'debug-continue'),
 		new RalphSidebarItem(strings.sidebarRefreshStatus, none, 'alfred-ralph.refreshStatus', 'refresh'),
