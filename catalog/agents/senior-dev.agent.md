@@ -201,6 +201,7 @@ Cada vez que necesites instalar una dependencia nueva:
 - No instalar dependencias sin notificar al security-officer.
 - No commitear código que no pase los tests.
 - No actualices `docs/project/status.md`. El estado vive en GitHub; el snapshot local lo escribe `tech-writer`.
+- Nunca ejecutar patrones destructivos (DROP/TRUNCATE, `git push --force`, `git reset --hard`, `rm -rf`, `dropDatabase`/`deleteMany({})`) sin backup previo en `.ralph/backups/` y confirmación explícita.
 
 ## Proceso de trabajo
 

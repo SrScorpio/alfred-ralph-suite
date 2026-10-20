@@ -8,6 +8,7 @@ import * as vscode from 'vscode';
 import { RalphStateManager } from '../stateManager';
 import { KanbanPanel } from '../kanbanPanel';
 import { sendToChat } from '../chatLauncher';
+import { checkDangerousCommand } from '../security/dangerGuard';
 
 // ── Sleep utility ────────────────────────────────────────────────────────────
 
@@ -85,6 +86,12 @@ export async function runTaskWithRetry(
 ): Promise<void> {
 	const pollMs = vscode.workspace.getConfiguration('ralph-suite').get<number>('pollIntervalMs', 5000);
 	KanbanPanel.beginTask(root, task.id);
+	// Issue #22 (guardrails): el prompt viaja al chat, donde la extensión no
+	// puede interceptar la ejecución; al menos deja la advertencia en el Output.
+	const danger = checkDangerousCommand(prompt);
+	if (danger) {
+		output.appendLine(`[Ralph] ⚠ ${task.id}: comando destructivo en el prompt (${danger.pattern}) — ${danger.guidance}`);
+	}
 	try {
 	for (let attempt = 1; attempt <= retries + 1; attempt++) {
 		if (signal?.aborted) { return; }
