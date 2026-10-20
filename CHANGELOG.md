@@ -8,6 +8,16 @@ All notable changes to Ralph Suite are documented here.
 
 - Nada pendiente.
 
+## [1.12.5] - 2026-10-20
+
+### Added
+- Seccion Alfred en la vista de la Activity Bar: Hablar con Alfred, Preguntar a Alfred por el estado, Verificar estado del proyecto, Pausar trabajo, Retomar trabajo y Actualizar estado (PR #33). Recupera el punto de menu de Alfred Dev Code integrado en la suite.
+- Accion `alfred-ralph.verifyStatus` (paleta): protocolo de verificacion ADR-020 - compara GitHub, status.md y board, tabla de divergencias, handoff a tech-writer, gate sin cerrar hasta reconciliar, offline declarado.
+- Prompt de tarea con ADR-021: test-first condicionado, preserve-tests por opcion tocada y features/fixes siempre con tests.
+
+
+- Nada pendiente.
+
 ## [1.12.4] - 2026-10-20
 
 ### Added
