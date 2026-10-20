@@ -163,6 +163,7 @@ Si no hay remoto, o fallan MCP y `gh`: commits locales y lo dices en el reporte.
 - No continuar tras dos intentos fallidos sin escalar.
 - No disimular dudas: se preguntan.
 - No actualices `docs/project/status.md`. El estado vive en GitHub; el snapshot local lo escribe `tech-writer`.
+- Nunca ejecutar patrones destructivos (DROP/TRUNCATE, `git push --force`, `git reset --hard`, `rm -rf`, `dropDatabase`/`deleteMany({})`) sin backup previo en `.ralph/backups/` y confirmación explícita.
 
 ## Proceso de trabajo
 

@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { backupFile } from './security/backup';
 
 const RALPH_DIR = '.ralph';
 const AGENT_DIR = '.agent';
@@ -126,6 +127,25 @@ export class RalphStateManager {
 	}
 
 	// ── Status ───────────────────────────────────────────────────────────────
+	/**
+	 * Issue #22 (guardrails): respalda en `.ralph/backups/` un status runtime
+	 * existente ANTES de sobreescribirlo con un valor distinto (o de borrarlo,
+	 * con `next === undefined`). Fail-open: si el backup falla, la escritura
+	 * del runtime sigue adelante.
+	 */
+	private static backupStatusBeforeOverwrite(root: string, id: string, next?: string): void {
+		try {
+			const sp = this.statusPath(root, id);
+			if (!fs.existsSync(sp)) { return; }
+			if (next !== undefined) {
+				const current = fs.readFileSync(sp, 'utf-8')
+					.split(/\r?\n/).map(l => l.trim()).filter(Boolean)[0] ?? '';
+				if (current === next) { return; }
+			}
+			backupFile(root, sp);
+		} catch { /* fail-open: nunca bloquear el runtime por el backup */ }
+	}
+
 	static setStatus(root: string, id: string, status: 'inprogress' | 'blocked', title?: string) {
 		if (status === 'inprogress') {
 			this.setInProgress(root, id, title);
@@ -136,6 +156,7 @@ export class RalphStateManager {
 	}
 
 	static setInProgress(root: string, id: string, title?: string) {
+		this.backupStatusBeforeOverwrite(root, id, 'inprogress');
 		this.ensure(root);
 		fs.writeFileSync(this.statusPath(root, id), 'inprogress', 'utf-8');
 
@@ -195,11 +216,13 @@ export class RalphStateManager {
 
 	static reset(root: string, id: string) {
 		const sp = this.statusPath(root, id);
+		this.backupStatusBeforeOverwrite(root, id); // issue #22: backup antes de borrar
 		if (fs.existsSync(sp)) { fs.unlinkSync(sp); }
 		// Keep log for history — don't delete it
 	}
 
 	static setTodoOverride(root: string, id: string): void {
+		this.backupStatusBeforeOverwrite(root, id, 'todo');
 		this.ensure(root);
 		fs.writeFileSync(this.statusPath(root, id), 'todo', 'utf-8');
 	}

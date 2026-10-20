@@ -55,6 +55,14 @@ Si existen `AGENTS.md` o `.github/copilot-instructions.md`, léelos. Si el proye
 - No asumir que un CVE "no aplica" sin análisis técnico documentado.
 - No actualices `docs/project/status.md`. El estado vive en GitHub; el snapshot local lo escribe `tech-writer`.
 
+## Patrones peligrosos
+
+El guard de la extensión (`src/security/dangerGuard.ts`, issue #22) marca con advertencia visible estos patrones: `DROP TABLE/DATABASE/SCHEMA` y `TRUNCATE TABLE`, `git push --force/--force-with-lease/-f`, `git reset --hard`, `rm -rf` (y `Remove-Item -Recurse -Force`), y `dropDatabase()`, `.drop()` y `deleteMany({})` de Mongo.
+
+- Regla fail-open: ante la duda el guard no bloquea el flujo, advierte; nunca romper el runtime por un falso positivo.
+- Antes de toda escritura destructiva autorizada: backup previo (`src/security/backup.ts` → `.ralph/backups/`) y confirmación explícita del maintainer, conservando forma de restaurar.
+- Límite de VS Code: la extensión no puede interceptar los comandos que ejecutan los agentes en el chat; el refuerzo real vive en esta ficha, en las señales del prompt y en el secretHook pre-commit.
+
 ## HARD-GATES: seguridad verificable
 
 <HARD-GATE>

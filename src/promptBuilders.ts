@@ -12,6 +12,7 @@ import { RalphStateManager, safeTaskId } from './stateManager';
 import { buildInitPromptText } from './agentsMdBuilders';
 import { AlfredIdentity } from './alfredIdentity';
 import { buildAlfredPrompt, buildAlfredInitPrompt } from './alfredPrompt';
+import { checkDangerousCommand } from './security/dangerGuard';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -107,6 +108,32 @@ function loadMemory(root: string, _configuredPath?: string): string | null {
 	return fs.readFileSync(p, 'utf-8').trim() || null;
 }
 
+// ── Guardrails (issue #22) ───────────────────────────────────────────────────
+
+/**
+ * Advertencia visible cuando la tarea del backlog (descripción o criterios,
+ * texto que la extensión embebe en el prompt) contiene un comando destructivo.
+ * La extensión no ejecuta esos comandos —el agente los corre en el chat— así
+ * que el refuerzo posible aquí es una advertencia explícita y accionable.
+ * Se aplica solo a la tarea: el prompt de init toma el goal del usuario
+ * interactivamente y no es superficie de inyección del backlog.
+ */
+function dangerousCommandWarning(task: any): string {
+	const text = [
+		task?.description ?? '',
+		...(Array.isArray(task?.acceptanceCriteria) ? task.acceptanceCriteria : []),
+	].join('\n');
+	const match = checkDangerousCommand(text);
+	if (!match) { return ''; }
+	return [
+		'━━━ ⚠️ PELIGRO: COMANDO DESTRUCTIVO DETECTADO EN LA TAREA ━━━',
+		`Patrón: ${match.pattern} — ${match.reason}`,
+		`Cómo continuar: ${match.guidance}`,
+		'No ejecutes ese comando sin backup previo del estado afectado (.ralph/backups/) y confirmación explícita del maintainer.',
+		'Límite documentado: la extensión no puede interceptar comandos que ejecutas en el chat; esta advertencia es el único refuerzo disponible.',
+	].join('\n');
+}
+
 // ── Task prompt ──────────────────────────────────────────────────────────────
 
 /**
@@ -149,7 +176,7 @@ export function buildPromptInAlfredMode(identity: AlfredIdentity, task: any, con
 		dependencies: task.dependencies || [],
 		memory,
 	});
-	return [base, '', ...completionSignalsBlock(ralphContext, task.id)].filter(Boolean).join('\n');
+	return [base, dangerousCommandWarning(task), ...completionSignalsBlock(ralphContext, task.id)].filter(Boolean).join('\n');
 }
 
 /**
@@ -200,6 +227,8 @@ export function buildPrompt(task: any, prd: any, context: unknown): string {
 		];
 	})() : [];
 
+	const dangerWarning = dangerousCommandWarning(task);
+
 	return [
 		`## Agent Profile`,
 		`**Engine:** ${profile.engine}`,
@@ -219,6 +248,7 @@ export function buildPrompt(task: any, prd: any, context: unknown): string {
 		task.dependencies?.length ? `\n**Depends on:** ${task.dependencies.join(', ')}` : '',
 		guardrails.length ? `\n**Rules:**\n${guardrails.map((g: string) => `- ${g}`).join('\n')}` : '',
 		boundaries.length ? `\n**Never touch:**\n${boundaries.map((b: string) => `- ${b}`).join('\n')}` : '',
+		dangerWarning,
 		'',
 		'---',
 		'Execute directly. No questions unless a checkpoint is hit.',
