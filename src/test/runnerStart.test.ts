@@ -6,6 +6,9 @@ import * as vscode from 'vscode';
 import { runnerStopMessage } from '../commands/task';
 import { existingAgentsChoice, setupProject } from '../commands/project';
 import { getBoardContent } from '../webview/kanbanHtml';
+import { KanbanPanel } from '../kanbanPanel';
+import { PrdManager } from '../prdManager';
+import { RalphStateManager } from '../stateManager';
 
 describe('ISSUE-004 runner start and existing AGENTS.md', () => {
 	const prd = {
@@ -33,6 +36,74 @@ describe('ISSUE-004 runner start and existing AGENTS.md', () => {
 		assert.match(html, /⚙ AGENTS\.md/);
 		assert.doesNotMatch(html, /⚙ Agents</);
 	});
+
+	it('blocks Auto Run duplicates while a task is active in this instance', async () => {
+		const root = path.resolve('runner-live-task');
+		const panel = Object.create(KanbanPanel.prototype) as any;
+		panel.root = root;
+		panel.folders = [{ index: 0, root }];
+		panel.autoRun = true;
+		panel.loopCount = 0;
+		let scheduled = 0;
+		let launched = 0;
+		panel.scheduleNextTask = () => { scheduled++; };
+		KanbanPanel.beginTask(root, 'ISSUE-001');
+		const executeCommand = vscode.commands.executeCommand;
+		(vscode.commands as any).executeCommand = async () => { launched++; };
+		try {
+			await panel.runNextTask();
+			assert.strictEqual(scheduled, 1);
+			assert.strictEqual(launched, 0);
+			assert.strictEqual(panel.autoRun, true);
+		} finally {
+			KanbanPanel.endTask(root, 'ISSUE-001');
+			(vscode.commands as any).executeCommand = executeCommand;
+		}
+	});
+
+	for (const choice of ['Recover and retry', undefined]) {
+		it(`requires explicit stale-marker recovery (${choice ? 'accepts' : 'declines'}) without writing the PRD`, async () => {
+			const root = path.resolve(`runner-stale-${choice ?? 'decline'}`);
+			const prd = {
+				project: 'Demo', description: '', version: '1.0.0',
+				issues: [{ id: 'ISSUE-001', title: 'Busy', description: '', status: 'inprogress', priority: 'P1', epic: 'General', dependencies: [], acceptanceCriteria: [] }],
+			};
+			const originalPrd = JSON.stringify(prd);
+			const panel = Object.create(KanbanPanel.prototype) as any;
+			panel.root = root;
+			panel.folders = [{ index: 0, root }];
+			panel.autoRun = true;
+			panel.loopCount = 0;
+			panel.aggregatedPrd = () => prd;
+			panel.haltRunner = () => { panel.autoRun = false; };
+			const original = {
+				getStatus: RalphStateManager.getStatus,
+				setTodoOverride: RalphStateManager.setTodoOverride,
+				showWarningMessage: vscode.window.showWarningMessage,
+				nextPending: PrdManager.nextPending,
+				executeCommand: vscode.commands.executeCommand,
+			};
+			let overrides = 0;
+			let launched = 0;
+			(RalphStateManager as any).getStatus = () => 'todo';
+			(RalphStateManager as any).setTodoOverride = () => { overrides++; };
+			(PrdManager as any).nextPending = (value: any) => value.issues.find((issue: any) => issue.status === 'todo') ?? null;
+			(vscode.window as any).showWarningMessage = async () => choice;
+			(vscode.commands as any).executeCommand = async () => { launched++; };
+			try {
+				await panel.runNextTask();
+				assert.strictEqual(overrides, choice ? 1 : 0);
+				assert.strictEqual(launched, choice ? 1 : 0);
+				assert.strictEqual(JSON.stringify(prd), originalPrd);
+			} finally {
+				(RalphStateManager as any).getStatus = original.getStatus;
+				(RalphStateManager as any).setTodoOverride = original.setTodoOverride;
+				(vscode.window as any).showWarningMessage = original.showWarningMessage;
+				(PrdManager as any).nextPending = original.nextPending;
+				(vscode.commands as any).executeCommand = original.executeCommand;
+			}
+		});
+	}
 
 	it('does not generate anything when AGENTS.md already exists and the choice is dismissed', async () => {
 		const root = fs.mkdtempSync(path.join(os.tmpdir(), 'ralph-agents-'));

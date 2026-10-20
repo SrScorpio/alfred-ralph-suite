@@ -35,12 +35,44 @@ describe('activation command guards', () => {
 		assert.ok(fs.existsSync(path.join(__dirname, '../../scripts/run-tests.js')));
 	});
 
-	it('anuncia el comando público syncIssue', () => {
+	it('anuncia syncIssue y Actualizar estado como comandos independientes', () => {
 		const packageJson = JSON.parse(fs.readFileSync(path.join(__dirname, '../../package.json'), 'utf8'));
-		assert.ok(packageJson.contributes.commands.some((command: { command: string; title: string }) =>
+		const commands = packageJson.contributes.commands;
+		assert.ok(commands.some((command: { command: string; title: string }) =>
 			command.command === 'ralph-suite.syncIssue'
 			&& command.title === '%command.syncIssue.title%'
 		));
+		assert.ok(commands.some((command: { command: string; title: string }) =>
+			command.command === 'alfred-ralph.refreshStatus'
+			&& command.title === 'Alfred: Actualizar estado'
+		));
+		assert.ok(packageJson.contributes.menus.commandPalette.some((entry: { command: string }) =>
+			entry.command === 'alfred-ralph.refreshStatus'
+		));
+	});
+
+	it('refresca el tablero y el árbol local sin ejecutar syncIssue', async () => {
+		const originalRefresh = KanbanPanel.refresh;
+		const originalRegisterTree = vscode.window.registerTreeDataProvider;
+		const capture = captureCommands();
+		let boardRefreshes = 0;
+		let sidebarRefreshes = 0;
+		(KanbanPanel as any).refresh = () => { boardRefreshes++; };
+		(vscode.window as any).registerTreeDataProvider = (_id: string, provider: { refresh: () => void }) => {
+			provider.refresh = () => { sidebarRefreshes++; };
+			return { dispose: () => undefined };
+		};
+		try {
+			_doActivate(context(), output());
+			await capture.handlers.get('alfred-ralph.refreshStatus')?.();
+			assert.strictEqual(boardRefreshes, 1);
+			assert.strictEqual(sidebarRefreshes, 1);
+			assert.ok(capture.handlers.has('ralph-suite.syncIssue'));
+		} finally {
+			capture.restore();
+			(KanbanPanel as any).refresh = originalRefresh;
+			(vscode.window as any).registerTreeDataProvider = originalRegisterTree;
+		}
 	});
 
 	it('does not execute mutating commands in an untrusted workspace', async () => {

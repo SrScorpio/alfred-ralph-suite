@@ -84,7 +84,8 @@ export async function runTaskWithRetry(
 	agent?: string,
 ): Promise<void> {
 	const pollMs = vscode.workspace.getConfiguration('ralph-suite').get<number>('pollIntervalMs', 5000);
-
+	KanbanPanel.beginTask(root, task.id);
+	try {
 	for (let attempt = 1; attempt <= retries + 1; attempt++) {
 		if (signal?.aborted) { return; }
 		if (attempt > 1) {
@@ -111,7 +112,11 @@ export async function runTaskWithRetry(
 		RalphStateManager.setInProgress(root, task.id, task.title);
 		KanbanPanel.refresh();
 		output.appendLine(`[Ralph] Task ${task.id} started — waiting ${minWaitMs / 1000}s`);
-		if (!await waitWithAbort(minWaitMs, signal)) { return; }
+		if (!await waitWithAbort(minWaitMs, signal)) {
+			RalphStateManager.setTodoOverride(root, task.id);
+			KanbanPanel.refresh();
+			return;
+		}
 
 		const startedAt = Date.now();
 		let completed = false;
@@ -121,7 +126,11 @@ export async function runTaskWithRetry(
 				output.appendLine(`[Ralph] ✓ ${task.id} completed`);
 				break;
 			}
-			if (!await waitWithAbort(pollMs, signal)) { return; }
+			if (!await waitWithAbort(pollMs, signal)) {
+				RalphStateManager.setTodoOverride(root, task.id);
+				KanbanPanel.refresh();
+				return;
+			}
 		}
 		if (completed) { return; }
 		if (signal?.aborted) { return; }
@@ -136,5 +145,12 @@ export async function runTaskWithRetry(
 			vscode.window.showWarningMessage(`Ralph: ${task.id} timed out`, 'Open Output')
 				.then(a => { if (a === 'Open Output') { output.show(); } });
 		}
+	}
+	} finally {
+		if (signal?.aborted && RalphStateManager.getStatus(root, task.id) === 'inprogress') {
+			RalphStateManager.setTodoOverride(root, task.id);
+			KanbanPanel.refresh();
+		}
+		KanbanPanel.endTask(root, task.id);
 	}
 }

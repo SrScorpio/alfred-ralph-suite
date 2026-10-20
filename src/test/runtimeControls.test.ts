@@ -50,6 +50,18 @@ describe('Ralph runtime controls', () => {
 		}
 	});
 
+	it('tracks live runs per workspace and allows stale runtime state to be explicitly overridden', () => {
+		const root = require('path').resolve('workspace');
+		KanbanPanel.beginTask(root, 'TASK');
+		try {
+			assert.strictEqual(KanbanPanel.isTaskActive(root, 'TASK'), true);
+			assert.strictEqual(KanbanPanel.isTaskActive(root, 'OTHER'), false);
+		} finally {
+			KanbanPanel.endTask(root, 'TASK');
+		}
+		assert.strictEqual(KanbanPanel.isTaskActive(root, 'TASK'), false);
+	});
+
 	it('stops without failing or retrying after abort', async () => {
 		const root = require('os').tmpdir();
 		const task = { id: `Ralph-abort-${Date.now()}`, title: 'Task' };
@@ -68,6 +80,26 @@ describe('Ralph runtime controls', () => {
 			assert.notStrictEqual(RalphStateManager.getStatus(root, task.id), 'failed');
 		} finally {
 			(vscode.commands as any).executeCommand = executeCommand;
+		}
+	});
+
+	it('clears an in-progress runtime marker and releases the live-run lock after abort', async () => {
+		const root = require('os').tmpdir();
+		const task = { id: `Ralph-abort-active-${Date.now()}`, title: 'Task' };
+		const controller = new AbortController();
+		const executeCommand = vscode.commands.executeCommand;
+		(vscode.commands as any).executeCommand = async () => undefined;
+		try {
+			const run = runTaskWithRetry(task, 'prompt', root, false, 100, 500, 0, { appendLine: () => undefined } as any, controller.signal);
+			await new Promise(resolve => setTimeout(resolve, 20));
+			assert.strictEqual(KanbanPanel.isTaskActive(root, task.id), true);
+			controller.abort();
+			await run;
+			assert.strictEqual(RalphStateManager.getStatus(root, task.id), 'todo');
+			assert.strictEqual(KanbanPanel.isTaskActive(root, task.id), false);
+		} finally {
+			(vscode.commands as any).executeCommand = executeCommand;
+			KanbanPanel.endTask(root, task.id);
 		}
 	});
 

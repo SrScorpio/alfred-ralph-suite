@@ -47,6 +47,12 @@ export function _doActivate(context: vscode.ExtensionContext, output: vscode.Out
 			await sendToChat('@alfred', { agent: 'alfred', fallbackMessage: 'Prompt copiado. Pegalo en el chat.' });
 		}),
 
+		vscode.commands.registerCommand('alfred-ralph.refreshStatus', () => {
+			output.appendLine('[Alfred] Refreshing local status');
+			KanbanPanel.refresh();
+			sidebar.refresh();
+		}),
+
 		vscode.commands.registerCommand('alfred-ralph.progress', async () => {
 			const action = ALFRED_CONTINUITY.find((item) => item.id === 'progress');
 			if (action) await sendToChat(action.prompt, { agent: 'alfred', fallbackMessage: 'Prompt copiado. Pegalo en el chat.' });
@@ -177,6 +183,7 @@ export function _doActivate(context: vscode.ExtensionContext, output: vscode.Out
 			}
 			const runtimeStatuses = RalphStateManager.getAllStatuses(root);
 			const prdStatuses = Object.fromEntries(prd.issues.map(issue => [issue.id, issue.status]));
+			if (taskId && runtimeStatuses[task.id] === 'todo') { task.status = 'todo'; }
 			if (taskId) {
 				const reason = getTaskRunBlockReason(task, runtimeStatuses, prdStatuses);
 				if (reason) { vscode.window.showErrorMessage(`Ralph: ${reason}`); return; }
