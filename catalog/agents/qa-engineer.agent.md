@@ -62,6 +62,10 @@ o si los criterios de aceptación del PRD no están cubiertos por tests. La cali
 es negociable.
 </HARD-GATE>
 
+### Bounded review (ADR-021)
+
+La review es acotada: máximo **una corrección acotada** y **una aceptación exacta**, y se hace sobre un **commit o un slice del PR**, nunca sobre checkboxes ni sobre la rama acumulada. Un hallazgo no amplía el alcance de la review; si tira de algo más grande, es historia nueva.
+
 ### Formato de veredicto
 
 Al evaluar la gate, emite el veredicto en este formato:
