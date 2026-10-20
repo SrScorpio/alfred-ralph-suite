@@ -11,10 +11,14 @@
  */
 
 import * as assert from 'assert';
+import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
 import {
 	parseMemorySections,
 	taskNeedsDecisions,
 	injectContext,
+	loadAndInjectContext,
 	MemorySection,
 	InjectionResult,
 } from '../contextInjector';
@@ -270,5 +274,87 @@ describe('injectContext — edge cases', () => {
 	it('should not inject decisions for pure bugfix labels', () => {
 		const result = injectContext(SAMPLE_MEMORIES, 'Fix null pointer in form handler', [], ['bugfix'], 'UI');
 		assert.strictEqual(result.decisions, null, 'Bugfix should not need decisions');
+	});
+});
+
+// ── Tests: loadAndInjectContext from docs/project/status.md (ADR-020) ────────
+
+describe('loadAndInjectContext — ADR-020: status.md es la única memoria', () => {
+	let root: string;
+
+	beforeEach(() => {
+		root = fs.mkdtempSync(path.join(os.tmpdir(), 'ralph-inject-'));
+	});
+
+	afterEach(() => {
+		fs.rmSync(root, { recursive: true, force: true });
+	});
+
+	function writeStatus(content: string): void {
+		const p = path.join(root, 'docs', 'project', 'status.md');
+		fs.mkdirSync(path.dirname(p), { recursive: true });
+		fs.writeFileSync(p, content, 'utf-8');
+	}
+
+	it('inyecta las secciones de status.md (Flujo activo, Bloqueos y Lessons como decisiones)', () => {
+		writeStatus([
+			'# Estado del flujo — Demo',
+			'',
+			'## Flujo activo',
+			'- **Flujo:** feature',
+			'',
+			'## Bloqueos',
+			'- ninguno',
+			'',
+			'## Lessons aprendidas',
+			'| Fecha | Lección |',
+			'',
+			'## Historial de gates',
+			'| 2026-10-19 | fase 1 | APROBADO |',
+			'',
+		].join('\n'));
+
+		const result = loadAndInjectContext(root, 'Refactor the database architecture', [], [], undefined);
+
+		assert.ok(result, 'status.md debe inyectarse');
+		assert.ok(result.injected.includes('## Flujo activo'), 'Core (Flujo activo) siempre');
+		assert.ok(result.injected.includes('## Bloqueos'), 'Bloqueos van como Known Issues');
+		assert.ok(result.injected.includes('## Lessons aprendidas'), 'Lessons entran como decisiones cuando la tarea lo pide');
+		assert.ok(!result.injected.includes('## Historial de gates'), 'el historial nunca se inyecta');
+	});
+
+	it('NO inyecta el legacy .agent/memories.md', () => {
+		fs.mkdirSync(path.join(root, '.agent'), { recursive: true });
+		fs.writeFileSync(path.join(root, '.agent', 'memories.md'), '## Project\n- Legacy secret\n', 'utf-8');
+
+		assert.strictEqual(loadAndInjectContext(root, 'task', [], [], undefined), null);
+		assert.strictEqual(loadAndInjectContext(root, 'task', [], [], undefined, '.agent/memories.md'), null);
+	});
+
+	it('devuelve null si status.md no existe o está vacío', () => {
+		assert.strictEqual(loadAndInjectContext(root, 'task', [], [], undefined), null);
+		writeStatus('   \n');
+		assert.strictEqual(loadAndInjectContext(root, 'task', [], [], undefined), null);
+	});
+
+	it('inyecta las secciones legacy migradas dentro de "## Conocimiento migrado (memories.md)"', () => {
+		writeStatus([
+			'# Estado del flujo — Demo',
+			'',
+			'## Conocimiento migrado (memories.md)',
+			'',
+			'## Project',
+			'- Goal: migrated goal',
+			'',
+			'## Conventions',
+			'- UTF-8 sin BOM en ficheros nuevos',
+			'',
+		].join('\n'));
+
+		const result = loadAndInjectContext(root, 'Fix typo', [], [], undefined);
+
+		assert.ok(result, 'status.md debe inyectarse');
+		assert.ok(result.injected.includes('## Project'), 'la sección migrada Project se inyecta');
+		assert.ok(result.injected.includes('UTF-8 sin BOM'), 'la sección migrada Conventions se inyecta');
 	});
 });

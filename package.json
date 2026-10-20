@@ -98,6 +98,10 @@
       {
         "command": "ralph-suite.optimizeMemory",
         "title": "%command.optimizeMemory.title%"
+      },
+      {
+        "command": "ralph-suite.migrateMemories",
+        "title": "%command.migrateMemories.title%"
       }
     ],
     "keybindings": [
@@ -158,6 +162,9 @@
         },
         {
           "command": "ralph-suite.optimizeMemory"
+        },
+        {
+          "command": "ralph-suite.migrateMemories"
         },
         {
           "command": "ralph-suite.openSettings"

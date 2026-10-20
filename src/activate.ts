@@ -11,7 +11,7 @@ import { DEFAULT_PRD_PATH, PrdManager, prdWatchPattern } from './prdManager';
 import { showMenu } from './commands/menu';
 import { initProject, setupProject } from './commands/project';
 import { getTaskRunBlockReason, pendingTasksMessage, runTaskWithRetry } from './commands/task';
-import { optimizeMemory } from './commands/memory';
+import { optimizeMemory, migrateMemories } from './commands/memory';
 import { selectTaskPrompt } from './promptBuilders';
 import { resolveWorkspaceRoot } from './workspaceRoot';
 import { requireWorkspaceTrust } from './workspaceTrust';
@@ -160,6 +160,14 @@ export function _doActivate(context: vscode.ExtensionContext, output: vscode.Out
 			const review = cfg.get<boolean>('memoryOptimizeReview', true);
 			const identity = await currentAlfredIdentity(output);
 			await optimizeMemory(root, output, review, identity);
+		}),
+
+		vscode.commands.registerCommand('ralph-suite.migrateMemories', async () => {
+			if (!requireWorkspaceTrust('migrar la memoria a status.md')) { return; }
+			output.appendLine('[Ralph] migrateMemories triggered');
+			const root = getWorkspaceRoot();
+			if (!root) { vscode.window.showErrorMessage('No workspace open.'); return; }
+			await migrateMemories(root, output);
 		}),
 
 		vscode.commands.registerCommand('ralph-suite.openSettings', () => {

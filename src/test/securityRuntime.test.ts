@@ -39,7 +39,23 @@ describe('Ralph runtime security contracts', () => {
 		assert.strictEqual(PrdManager.nextPending(prd as any, root)?.id, 'TODO');
 	});
 
-	it('rejects absolute and traversal memory paths outside the workspace', () => {
+	it('injects knowledge from docs/project/status.md and never from legacy memories.md', () => {
+		const legacy = path.join(root, '.agent', 'memories.md');
+		fs.writeFileSync(legacy, '# Project Memories\n\n## Project\n- Secret legacy', 'utf-8');
+
+		// Sin status.md no hay memoria que inyectar; el legacy NO se inyecta (ADR-020).
+		assert.strictEqual(loadAndInjectContext(root, 'task', [], [], undefined), null);
+
+		const statusPath = path.join(root, 'docs', 'project', 'status.md');
+		fs.mkdirSync(path.dirname(statusPath), { recursive: true });
+		fs.writeFileSync(statusPath, '# Estado\n\n## Flujo activo\n- Fase 1\n\n## Bloqueos\n- ninguno\n', 'utf-8');
+		const injection = loadAndInjectContext(root, 'task', [], [], undefined);
+		assert.ok(injection, 'status.md debe inyectarse');
+		assert.ok(injection.injected.includes('Flujo activo'));
+		assert.ok(!injection.injected.includes('Secret legacy'));
+	});
+
+	it('ignores configured legacy memory paths outside the workspace', () => {
 		const outside = path.join(path.dirname(root), 'ralph-outside-memories.md');
 		fs.writeFileSync(outside, '# Outside\n\n## Project\n- Secret', 'utf-8');
 
@@ -55,26 +71,23 @@ describe('Ralph runtime security contracts', () => {
 		fs.rmSync(outside, { force: true });
 	});
 
-	it('writes configured memory paths outside the workspace only to the safe fallback', () => {
+	it('migrates from the safe fallback when configured memory paths point outside the workspace', () => {
 		const configured = path.join(path.dirname(root), 'ralph-configured-outside.md');
 		const traversal = path.join('..', 'ralph-traversal-outside.md');
-		RalphStateManager.initMemories(root, 'Goal', configured);
-		RalphStateManager.initMemories(root, 'Goal', traversal);
-		RalphStateManager.appendMemory(root, {
-			id: 'ISSUE-001',
-			title: 'Task',
-			status: 'completed',
-			startedAt: new Date().toISOString(),
-			note: 'DECISION: Keep memory inside workspace',
-		}, configured);
+		const legacy = path.join(root, '.agent', 'memories.md');
+		fs.writeFileSync(legacy, '# Project Memories\n\n## Project\n- Keep memory inside workspace\n', 'utf-8');
 
-		assert.ok(fs.existsSync(path.join(root, '.agent', 'memories.md')));
-		assert.ok(fs.readFileSync(path.join(root, '.agent', 'memories.md'), 'utf-8').includes('Keep memory inside workspace'));
+		const result = RalphStateManager.migrateMemories(root, configured);
+		RalphStateManager.migrateMemories(root, traversal);
+
+		assert.strictEqual(result.migrated, true);
+		assert.ok(fs.existsSync(path.join(root, '.agent', 'memories.md')), 'el original no se borra');
+		assert.ok(fs.readFileSync(result.statusPath, 'utf-8').includes('Keep memory inside workspace'));
 		assert.ok(!fs.existsSync(configured));
 		assert.ok(!fs.existsSync(path.resolve(root, traversal)));
 	});
 
-	it('does not write through a configured memory symlink outside the workspace (Windows may skip without symlink privileges)', function () {
+	it('does not migrate through a configured memory symlink outside the workspace (Windows may skip without symlink privileges)', function () {
 		const outside = fs.mkdtempSync(path.join(os.tmpdir(), 'ralph-memory-outside-'));
 		const outsideMemory = path.join(outside, 'memories.md');
 		const configuredDirectory = path.join(root, 'linked-memories');
@@ -91,8 +104,10 @@ describe('Ralph runtime security contracts', () => {
 		}
 
 		try {
-			RalphStateManager.initMemories(root, 'Goal', configured);
-			assert.ok(fs.existsSync(path.join(root, '.agent', 'memories.md')));
+			fs.writeFileSync(path.join(root, '.agent', 'memories.md'), '# Project Memories\n\n## Project\n- Legacy\n', 'utf-8');
+			const result = RalphStateManager.migrateMemories(root, configured);
+			assert.strictEqual(result.migrated, true);
+			assert.ok(fs.existsSync(path.join(root, 'docs', 'project', 'status.md')));
 			assert.strictEqual(fs.readFileSync(outsideMemory, 'utf-8'), '# Outside\n');
 		} finally {
 			fs.rmSync(configuredDirectory, { recursive: true, force: true });
@@ -115,8 +130,9 @@ describe('Ralph runtime security contracts', () => {
 		}
 
 		try {
-			assert.throws(() => RalphStateManager.initMemories(root, 'Goal'));
+			assert.throws(() => RalphStateManager.migrateMemories(root));
 			assert.strictEqual(fs.readdirSync(outside).length, 0);
+			assert.ok(!fs.existsSync(RalphStateManager.statusMdPath(root)));
 		} finally {
 			fs.rmSync(agentPath, { recursive: true, force: true });
 			fs.rmSync(outside, { recursive: true, force: true });

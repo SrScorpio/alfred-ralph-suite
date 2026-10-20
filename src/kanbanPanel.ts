@@ -95,8 +95,8 @@ export class KanbanPanel {
 				this.render();
 			});
 			watch(folder.root, prdWatchPattern(folder.root, this.prdPathSetting()), () => this.render());
-			const memRel = path.relative(folder.root, RalphStateManager.memoriesPath(folder.root, this.memoriesPathSetting())) || '.agent/memories.md';
-			watch(folder.root, memRel.replace(/\\/g, '/'), () => this.render());
+			// ADR-020: la memoria visible es docs/project/status.md.
+			watch(folder.root, 'docs/project/status.md', () => this.render());
 		}
 	}
 
@@ -181,7 +181,7 @@ export class KanbanPanel {
 				.map(folder => path.relative(this.root, PrdManager.prdPath(folder.root, this.prdPathSetting())).replace(/\\/g, '/') || '.')
 				.join(', ');
 			KanbanPanel.output?.appendLine(`[Ralph] Board loaded ${prd?.issues.length ?? 0} issues from ${loadedPaths || 'none'}`);
-			const memories = this.loadFile(RalphStateManager.memoriesPath(this.root, this.memoriesPathSetting()));
+			const memories = this.loadFile(RalphStateManager.statusMdPath(this.root));
 			const logs     = this.loadLogs();
 			this.alfredEffective = alfredEffective;
 			const cfg      = this.getBoardConfig();
@@ -531,19 +531,18 @@ export class KanbanPanel {
 				if (!id) { break; }
 				const note = await vscode.window.showInputBox({
 					title: `Add note: ${id}`,
-					prompt: 'One line note — saved to log.json and memories.md',
+					prompt: 'One line note — saved to the task log (.ralph/task-*-log.json)',
 					placeHolder: 'e.g. Fixed CORS headers, added Authorization to allowed list',
 					ignoreFocusOut: true
 				});
 				if (!note) { break; }
-				// Load log, inject note, save, append to memories
+				// Load log and inject note (ADR-020: the note lives in .ralph/, not memories.md)
 				const lp = RalphStateManager.logPath(this.folderFromMessage(msg)?.root ?? this.root, id);
 				if (fs.existsSync(lp)) {
 					try {
 						const log = JSON.parse(fs.readFileSync(lp, 'utf-8'));
 						log.note = note;
 						fs.writeFileSync(lp, JSON.stringify(log, null, 2), 'utf-8');
-						RalphStateManager.appendMemory(this.folderFromMessage(msg)?.root ?? this.root, log, this.memoriesPathSetting());
 					} catch { /**/ }
 				}
 				this.render();
@@ -760,8 +759,9 @@ export class KanbanPanel {
 				break;
 
 			case 'openMemories': {
-				const p = RalphStateManager.memoriesPath(this.root, this.memoriesPathSetting());
-				RalphStateManager.initMemories(this.root, '', this.memoriesPathSetting());
+				// ADR-020: abre la única memoria del proyecto (docs/project/status.md).
+				const p = RalphStateManager.statusMdPath(this.root);
+				fs.mkdirSync(path.dirname(p), { recursive: true });
 				const doc = await vscode.workspace.openTextDocument(p);
 				await vscode.window.showTextDocument(doc);
 				break;

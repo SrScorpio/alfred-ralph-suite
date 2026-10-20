@@ -1,5 +1,5 @@
 /**
- * memory.ts — Optimización y auto-optimización de memorias
+ * memory.ts — Optimización de memories.md legacy y migración a status.md (ADR-020)
  *
  * Extraído de extension.ts durante la modularización (ADR-014).
  */
@@ -52,7 +52,7 @@ export async function optimizeMemory(
 	const configuredPath = vscode.workspace.getConfiguration('ralph-suite').get<string>('memoriesPath', '.agent/memories.md');
 	const memoriesPath = RalphStateManager.memoriesPath(root, configuredPath);
 	if (!fs.existsSync(memoriesPath)) {
-		vscode.window.showInformationMessage('No memories.md found — nothing to optimize.');
+		vscode.window.showInformationMessage('No memories.md found — project memory lives in docs/project/status.md (ADR-020). Nothing to optimize.');
 		return;
 	}
 
@@ -87,6 +87,56 @@ export async function optimizeMemory(
 		vscode.window.showInformationMessage('Review the optimization in Chat. Confirm to apply or discard.');
 	}
 
+}
+
+// ── Migration memories.md → status.md (ADR-020) ──────────────────────────────
+
+/**
+ * Migra el contenido legacy de .agent/memories.md a docs/project/status.md.
+ * Pide confirmación mostrando las líneas a migrar y nunca borra el original.
+ */
+export async function migrateMemories(root: string, output: vscode.OutputChannel): Promise<void> {
+	const configuredPath = vscode.workspace.getConfiguration('ralph-suite').get<string>('memoriesPath', '.agent/memories.md');
+	let memoriesFile: string;
+	try {
+		memoriesFile = RalphStateManager.memoriesPath(root, configuredPath);
+	} catch (error: unknown) {
+		vscode.window.showErrorMessage(error instanceof Error ? error.message : 'Ralph: memories.md must remain inside the workspace.');
+		return;
+	}
+	if (!fs.existsSync(memoriesFile)) {
+		vscode.window.showInformationMessage('No .agent/memories.md to migrate — project memory already lives in docs/project/status.md (ADR-020).');
+		return;
+	}
+	const content = fs.readFileSync(memoriesFile, 'utf-8').trim();
+	if (!content) {
+		vscode.window.showInformationMessage('.agent/memories.md is empty — nothing to migrate.');
+		return;
+	}
+	const lines = content.split(/\r?\n/).length;
+	const target = 'docs/project/status.md';
+	const confirm = await vscode.window.showWarningMessage(
+		`Migrate ${lines} line(s) from .agent/memories.md to ${target}? The original file is kept (ADR-020).`,
+		'Migrate',
+	);
+	if (confirm !== 'Migrate') { return; }
+
+	try {
+		const result = RalphStateManager.migrateMemories(root, configuredPath);
+		output.appendLine(`[Memory] Migrated ${result.lines} line(s) from ${memoriesFile.replace(/\\/g, '/')} to ${result.statusPath.replace(/\\/g, '/')}`);
+		const open = await vscode.window.showInformationMessage(
+			result.migrated
+				? `Memory migrated to ${target} (${result.lines} line(s)) under "## Conocimiento migrado (memories.md)".`
+				: `Nothing to migrate — ${target} is the single project memory (ADR-020).`,
+			'Open status.md',
+		);
+		if (open === 'Open status.md') {
+			const doc = await vscode.workspace.openTextDocument(result.statusPath);
+			await vscode.window.showTextDocument(doc);
+		}
+	} catch (error: unknown) {
+		vscode.window.showErrorMessage(error instanceof Error ? error.message : 'Ralph: memory migration failed.');
+	}
 }
 
 // ── Auto-optimize check (implemented in KanbanPanel.checkAutoOptimize) ───────
