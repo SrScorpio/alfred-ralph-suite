@@ -8,6 +8,21 @@ All notable changes to Ralph Suite are documented here.
 
 - Nada pendiente.
 
+## [1.12.4] - 2026-10-20
+
+### Added
+- Memoria unica en `docs/project/status.md` (ADR-020, PR #30): setCompleted ya no escribe memories, inyeccion de contexto desde status.md, comando `Ralph: Migrar memories a status.md` con confirmacion e idempotente, ajustes de memories marcados obsoletos.
+- Guardrails (PR #31): detector de patrones peligrosos (DROP/TRUNCATE, force push, reset --hard, rm -rf, Remove-Item -Recurse -Force, drops de colecciones) con guia accionable y fail-open; backup automatico en `.ralph/backups/` antes de sobrescribir estados runtime; fichas actualizadas.
+- Alfred verifica el estado (PR #32): comparativa GitHub/status.md/board en arranque y cierre de fase, divergencias a tech-writer, gate sin cerrar hasta reconciliar.
+- Analisis/importacion crean estructura (PR #32): `docs/project/status.md` desde plantilla al importar un backlog nuevo; el prompt de analisis exige lo mismo.
+- Skill suggest (PR #32): seccion "Si falta una skill" en project-docs y regla en fichas alfred/junior-dev.
+
+### Tests
+- Suite: 299 passing (70 nuevos desde 1.12.3).
+
+
+- Nada pendiente.
+
 ## [1.12.3] - 2026-10-20
 
 ### Added
