@@ -254,6 +254,8 @@ export function buildPrompt(task: any, prd: any, context: unknown): string {
 		'Execute directly. No questions unless a checkpoint is hit.',
 		'Before editing, inspect current files and preserve unrelated user changes.',
 		'After editing, run the narrowest relevant verification command available.',
+'Testing (ADR-021): test-first cuando exista un test determinista ejecutable y un resultado esperado claro (RED-GREEN-REFACTOR); si no aplica, explica la excepcion y ejecuta chequeos funcionales proporcionales.',
+'Preserve-tests: anade un test de preservacion por cada opcion o comando existente que toques. Features y fixes SIEMPRE llevan tests.',
 		'⚠️ Do NOT modify prd.json.',
 		'',
 		...completionSignals,

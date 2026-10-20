@@ -1,503 +1,508 @@
 {
-  "name": "alfred-ralph-suite",
-  "displayName": "Alfred Ralph Suite",
-  "description": "Equipo de agentes Alfred Dev y tablero Ralph en una sola extensión: backlog, runner y quality gates sin dos instalaciones.",
-  "version": "1.12.4",
-  "publisher": "SrScorpio",
-  "engines": {
-    "vscode": "^1.103.0"
-  },
-  "categories": [
-    "Other"
-  ],
-  "activationEvents": [
-    "onStartupFinished"
-  ],
-  "capabilities": {
-    "untrustedWorkspaces": {
-      "supported": false,
-      "description": "Ralph Suite necesita un workspace de confianza para escribir estado y ejecutar tareas."
-    }
-  },
-  "main": "./dist/extension.js",
-  "icon": "images/icon.png",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/SrScorpio/alfred-ralph-suite.git"
-  },
-  "contributes": {
-    "commands": [
-      {
-        "command": "alfred-ralph.openChat",
-        "title": "Alfred: Hablar con Alfred"
-      },
-      {
-        "command": "alfred-ralph.progress",
-        "title": "Alfred: Ver progreso"
-      },
-      {
-        "command": "alfred-ralph.refreshStatus",
-        "title": "Alfred: Actualizar estado"
-      },
-      {
-        "command": "alfred-ralph.pause",
-        "title": "Alfred: Pausar trabajo"
-      },
-      {
-        "command": "alfred-ralph.retomar",
-        "title": "Alfred: Retomar trabajo"
-      },
-      {
-        "command": "alfred-ralph.startFlow",
-        "title": "Alfred: Iniciar flujo"
-      },
-      {
-        "command": "alfred-ralph.installSecretHook",
-        "title": "Alfred: Instalar Secret Guard"
-      },
-      {
-        "command": "ralph-suite.openKanban",
-        "title": "Ralph: Open Board"
-      },
-      {
-        "command": "ralph-suite.initProject",
-        "title": "%command.initProject.title%"
-      },
-      {
-        "command": "ralph-suite.analyzeProject",
-        "title": "%command.analyzeProject.title%"
-      },
-      {
-        "command": "ralph-suite.runTask",
-        "title": "Ralph: Run Next Task"
-      },
-      {
-        "command": "ralph-suite.syncIssue",
-        "title": "%command.syncIssue.title%"
-      },
-      {
-        "command": "ralph-suite.openSettings",
-        "title": "Ralph: Settings"
-      },
-      {
-        "command": "ralph-suite.showMenu",
-        "title": "Ralph: Show Menu"
-      },
-      {
-        "command": "ralph-suite.startRunner",
-        "title": "Ralph: Start Runner"
-      },
-      {
-        "command": "ralph-suite.stopRunner",
-        "title": "Ralph: Stop Runner"
-      },
-      {
-        "command": "ralph-suite.setupProject",
-        "title": "Ralph: Setup Project (AGENTS.md + docs/)"
-      },
-      {
-        "command": "ralph-suite.optimizeMemory",
-        "title": "%command.optimizeMemory.title%"
-      },
-      {
-        "command": "ralph-suite.migrateMemories",
-        "title": "%command.migrateMemories.title%"
-      }
-    ],
-    "keybindings": [
-      {
-        "command": "ralph-suite.openKanban",
-        "key": "ctrl+shift+r",
-        "mac": "cmd+shift+r"
-      }
-    ],
-    "viewsContainers": {
-      "activitybar": [
-        {
-          "id": "ralph-suite-container",
-          "title": "Ralph Suite",
-          "icon": "$(robot)"
-        }
-      ]
-    },
-    "views": {
-      "ralph-suite-container": [
-        {
-          "id": "ralph-suite.sidebar",
-          "name": "Ralph Suite"
-        }
-      ]
-    },
-    "menus": {
-      "commandPalette": [
-        {
-          "command": "ralph-suite.openKanban"
-        },
-        {
-          "command": "alfred-ralph.refreshStatus"
-        },
-        {
-          "command": "ralph-suite.showMenu"
-        },
-        {
-          "command": "ralph-suite.initProject"
-        },
-        {
-          "command": "ralph-suite.analyzeProject"
-        },
-        {
-          "command": "ralph-suite.runTask"
-        },
-        {
-          "command": "ralph-suite.startRunner"
-        },
-        {
-          "command": "ralph-suite.stopRunner"
-        },
-        {
-          "command": "ralph-suite.syncIssue"
-        },
-        {
-          "command": "ralph-suite.setupProject"
-        },
-        {
-          "command": "ralph-suite.optimizeMemory"
-        },
-        {
-          "command": "ralph-suite.migrateMemories"
-        },
-        {
-          "command": "ralph-suite.openSettings"
-        }
-      ],
-      "editor/context": [
-        {
-          "command": "ralph-suite.openKanban",
-          "when": "resourceFilename == prd.json",
-          "group": "ralph"
-        }
-      ]
-    },
-    "configuration": {
-      "title": "Ralph Suite",
-      "properties": {
-        "ralph-suite.engine": {
-          "type": "string",
-          "enum": [
-            "copilot",
-            "codex",
-            "claude",
-            "opencode"
-          ],
-          "default": "copilot",
-          "description": "%config.engine.description%"
-        },
-        "ralph-suite.alfredMode": {
-          "type": "string",
-          "enum": [
-            "auto",
-            "off"
-          ],
-          "default": "auto",
-          "description": "%config.alfredMode.description%"
-        },
-        "ralph-suite.modelProfiles": {
-          "type": "object",
-          "default": {
-            "default": {
-              "engine": "copilot",
-              "model": "",
-              "mode": "execute"
-            },
-            "bugfix": {
-              "engine": "copilot",
-              "model": "",
-              "mode": "execute"
-            },
-            "review": {
-              "engine": "copilot",
-              "model": "",
-              "mode": "review"
-            },
-            "security": {
-              "engine": "copilot",
-              "model": "",
-              "mode": "execute"
-            }
-          },
-          "properties": {
-            "default": {
-              "type": "object",
-              "properties": {
-                "engine": {
-                  "type": "string",
-                  "enum": [
-                    "copilot",
-                    "codex",
-                    "claude",
-                    "opencode"
-                  ]
-                },
-                "model": {
-                  "type": "string"
-                },
-                "mode": {
-                  "type": "string",
-                  "enum": [
-                    "execute",
-                    "review"
-                  ]
-                }
-              }
-            },
-            "bugfix": {
-              "type": "object",
-              "properties": {
-                "engine": {
-                  "type": "string",
-                  "enum": [
-                    "copilot",
-                    "codex",
-                    "claude",
-                    "opencode"
-                  ]
-                },
-                "model": {
-                  "type": "string"
-                },
-                "mode": {
-                  "type": "string",
-                  "enum": [
-                    "execute",
-                    "review"
-                  ]
-                }
-              }
-            },
-            "review": {
-              "type": "object",
-              "properties": {
-                "engine": {
-                  "type": "string",
-                  "enum": [
-                    "copilot",
-                    "codex",
-                    "claude",
-                    "opencode"
-                  ]
-                },
-                "model": {
-                  "type": "string"
-                },
-                "mode": {
-                  "type": "string",
-                  "enum": [
-                    "execute",
-                    "review"
-                  ]
-                }
-              }
-            },
-            "security": {
-              "type": "object",
-              "properties": {
-                "engine": {
-                  "type": "string",
-                  "enum": [
-                    "copilot",
-                    "codex",
-                    "claude",
-                    "opencode"
-                  ]
-                },
-                "model": {
-                  "type": "string"
-                },
-                "mode": {
-                  "type": "string",
-                  "enum": [
-                    "execute",
-                    "review"
-                  ]
-                }
-              }
-            }
-          },
-          "additionalProperties": {
-            "type": "object",
-            "properties": {
-              "engine": {
-                "type": "string",
-                "enum": [
-                  "copilot",
-                  "codex",
-                  "claude",
-                  "opencode"
-                ]
-              },
-              "model": {
-                "type": "string"
-              },
-              "mode": {
-                "type": "string",
-                "enum": [
-                  "execute",
-                  "review"
-                ]
-              }
-            }
-          },
-          "markdownDescription": "%config.modelProfiles.description%"
-        },
-        "ralph-suite.maxLoops": {
-          "type": "number",
-          "default": 5,
-          "minimum": 1,
-          "maximum": 50,
-          "description": "%config.maxLoops.description%"
-        },
-        "ralph-suite.freshContext": {
-          "type": "boolean",
-          "default": true,
-          "description": "%config.freshContext.description%"
-        },
-        "ralph-suite.boardScope": {
-          "type": "string",
-          "enum": [
-            "folder",
-            "workspace"
-          ],
-          "default": "folder",
-          "description": "Kanban scope: current folder or aggregated workspace folders."
-        },
-        "ralph-suite.prdPath": {
-          "type": "string",
-          "default": "docs/ralph/prd.json",
-          "description": "%config.prdPath.description%"
-        },
-        "ralph-suite.memoriesPath": {
-          "type": "string",
-          "default": ".agent/memories.md",
-          "description": "%config.memoriesPath.description%"
-        },
-        "ralph-suite.guardrails": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "default": [
-            "Never modify prd.json",
-            "Never delete files without confirmation",
-            "Always include tests for new features",
-            "Task states must be exactly: todo | inprogress | completed | blocked | failed — never mix or invent states",
-            "Use GitHub references as owner/repo#N; GitHub assigns N. Reserve ADR-NNN exclusively for decisions",
-            "Use the Ralph local ID exactly as supplied by the backlog and runner context; never infer GitHub numbers or renumber or migrate IDs",
-            "Only Ralph executions with explicit task ID and workspace root write .ralph signals; ad hoc, analysis, review, documentation and handoff work does not require an ID or signals",
-            "Write the exact completed status and NOTA signal only after the full task scope and quality gates pass; never during review, rejection or partial handoff",
-            "Only authorized commits are allowed; authorization must come from the user or current workflow",
-            "Always read .agent/memories.md before starting any task to load project context",
-            "Never commit secrets, API keys, tokens or passwords — use environment variables",
-            "Always validate and sanitize user inputs — never trust raw input",
-            "Run existing tests before marking a task as completed — do not break passing tests",
-            "Security checkpoints required for: authentication changes, file deletions, DB schema changes, dependency upgrades",
-            "All new code must follow the conventions already present in the codebase — check existing patterns before creating new ones",
-            "Log important decisions and architectural choices in .agent/memories.md",
-            "Never use placeholders or TODO comments in production code — implement or leave existing code",
-            "If a Ralph execution lacks explicit task ID or workspace root, ask for that context before running it"
-          ],
-          "description": "%config.guardrails.description%"
-        },
-        "ralph-suite.boundaries": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "default": [],
-          "description": "%config.boundaries.description%"
-        },
-        "ralph-suite.taskTimeoutMs": {
-          "type": "number",
-          "default": 600000,
-          "minimum": 30000,
-          "description": "%config.taskTimeoutMs.description%"
-        },
-        "ralph-suite.taskRetries": {
-          "type": "number",
-          "default": 1,
-          "minimum": 0,
-          "maximum": 5,
-          "description": "%config.taskRetries.description%"
-        },
-        "ralph-suite.minWaitMs": {
-          "type": "number",
-          "default": 15000,
-          "minimum": 0,
-          "description": "%config.minWaitMs.description%"
-        },
-        "ralph-suite.pollIntervalMs": {
-          "type": "number",
-          "default": 5000,
-          "minimum": 1000,
-          "description": "%config.pollIntervalMs.description%"
-        },
-        "ralph-suite.agentRole": {
-          "type": "string",
-          "default": "Senior Software Engineer",
-          "description": "%config.agentRole.description%"
-        },
-        "ralph-suite.agentStack": {
-          "type": "string",
-          "default": "",
-          "description": "%config.agentStack.description%"
-        },
-        "ralph-suite.agentProject": {
-          "type": "string",
-          "default": "",
-          "description": "%config.agentProject.description%"
-        },
-        "ralph-suite.agentCheckpoints": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "default": [
-            "Delete files or directories",
-            "Modify database schemas or migrations",
-            "Change authentication or security configuration",
-            "Install or upgrade major dependencies",
-            "Refactor more than 500 lines of code",
-            "Change architecture documented in docs/"
-          ],
-          "description": "%config.agentCheckpoints.description%"
-        },
-        "ralph-suite.memoryOptimizeEvery": {
-          "type": "number",
-          "default": 0,
-          "minimum": 0,
-          "description": "%config.memoryOptimizeEvery.description%"
-        },
-        "ralph-suite.memoryOptimizeReview": {
-          "type": "boolean",
-          "default": true,
-          "description": "%config.memoryOptimizeReview.description%"
-        }
-      }
-    }
-  },
-  "scripts": {
-    "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
-    "package": "vsce package --no-dependencies",
-    "test": "node scripts/run-tests.js"
-  },
-  "devDependencies": {
-    "@types/mocha": "^10.0.0",
-    "@types/node": "^20.19.41",
-    "@types/vscode": "^1.103.0",
-    "@vscode/vsce": "^2.24.0",
-    "mocha": "^10.0.0",
-    "ts-node": "^10.9.0",
-    "typescript": "^5.4.0"
-  }
+	"name": "alfred-ralph-suite",
+	"displayName": "Alfred Ralph Suite",
+	"description": "Equipo de agentes Alfred Dev y tablero Ralph en una sola extensión: backlog, runner y quality gates sin dos instalaciones.",
+	"version": "1.12.4",
+	"publisher": "SrScorpio",
+	"engines": {
+		"vscode": "^1.103.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"onStartupFinished"
+	],
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"supported": false,
+			"description": "Ralph Suite necesita un workspace de confianza para escribir estado y ejecutar tareas."
+		}
+	},
+	"main": "./dist/extension.js",
+	"icon": "images/icon.png",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/SrScorpio/alfred-ralph-suite.git"
+	},
+	"contributes": {
+		"commands": [
+			{
+				"command": "alfred-ralph.openChat",
+				"title": "Alfred: Hablar con Alfred"
+			},
+			{
+				"command": "alfred-ralph.progress",
+				"title": "Alfred: Ver progreso"
+			},
+			{
+				"command": "alfred-ralph.verifyStatus",
+				"title": "Alfred: Verificar estado del proyecto",
+				"category": "Alfred"
+			},
+			{
+				"command": "alfred-ralph.refreshStatus",
+				"title": "Alfred: Actualizar estado"
+			},
+			{
+				"command": "alfred-ralph.pause",
+				"title": "Alfred: Pausar trabajo"
+			},
+			{
+				"command": "alfred-ralph.retomar",
+				"title": "Alfred: Retomar trabajo"
+			},
+			{
+				"command": "alfred-ralph.startFlow",
+				"title": "Alfred: Iniciar flujo"
+			},
+			{
+				"command": "alfred-ralph.installSecretHook",
+				"title": "Alfred: Instalar Secret Guard"
+			},
+			{
+				"command": "ralph-suite.openKanban",
+				"title": "Ralph: Open Board"
+			},
+			{
+				"command": "ralph-suite.initProject",
+				"title": "%command.initProject.title%"
+			},
+			{
+				"command": "ralph-suite.analyzeProject",
+				"title": "%command.analyzeProject.title%"
+			},
+			{
+				"command": "ralph-suite.runTask",
+				"title": "Ralph: Run Next Task"
+			},
+			{
+				"command": "ralph-suite.syncIssue",
+				"title": "%command.syncIssue.title%"
+			},
+			{
+				"command": "ralph-suite.openSettings",
+				"title": "Ralph: Settings"
+			},
+			{
+				"command": "ralph-suite.showMenu",
+				"title": "Ralph: Show Menu"
+			},
+			{
+				"command": "ralph-suite.startRunner",
+				"title": "Ralph: Start Runner"
+			},
+			{
+				"command": "ralph-suite.stopRunner",
+				"title": "Ralph: Stop Runner"
+			},
+			{
+				"command": "ralph-suite.setupProject",
+				"title": "Ralph: Setup Project (AGENTS.md + docs/)"
+			},
+			{
+				"command": "ralph-suite.optimizeMemory",
+				"title": "%command.optimizeMemory.title%"
+			},
+			{
+				"command": "ralph-suite.migrateMemories",
+				"title": "%command.migrateMemories.title%"
+			}
+		],
+		"keybindings": [
+			{
+				"command": "ralph-suite.openKanban",
+				"key": "ctrl+shift+r",
+				"mac": "cmd+shift+r"
+			}
+		],
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "ralph-suite-container",
+					"title": "Ralph Suite",
+					"icon": "$(robot)"
+				}
+			]
+		},
+		"views": {
+			"ralph-suite-container": [
+				{
+					"id": "ralph-suite.sidebar",
+					"name": "Ralph Suite"
+				}
+			]
+		},
+		"menus": {
+			"commandPalette": [
+				{
+					"command": "ralph-suite.openKanban"
+				},
+				{
+					"command": "alfred-ralph.refreshStatus"
+				},
+				{
+					"command": "ralph-suite.showMenu"
+				},
+				{
+					"command": "ralph-suite.initProject"
+				},
+				{
+					"command": "ralph-suite.analyzeProject"
+				},
+				{
+					"command": "ralph-suite.runTask"
+				},
+				{
+					"command": "ralph-suite.startRunner"
+				},
+				{
+					"command": "ralph-suite.stopRunner"
+				},
+				{
+					"command": "ralph-suite.syncIssue"
+				},
+				{
+					"command": "ralph-suite.setupProject"
+				},
+				{
+					"command": "ralph-suite.optimizeMemory"
+				},
+				{
+					"command": "ralph-suite.migrateMemories"
+				},
+				{
+					"command": "ralph-suite.openSettings"
+				}
+			],
+			"editor/context": [
+				{
+					"command": "ralph-suite.openKanban",
+					"when": "resourceFilename == prd.json",
+					"group": "ralph"
+				}
+			]
+		},
+		"configuration": {
+			"title": "Ralph Suite",
+			"properties": {
+				"ralph-suite.engine": {
+					"type": "string",
+					"enum": [
+						"copilot",
+						"codex",
+						"claude",
+						"opencode"
+					],
+					"default": "copilot",
+					"description": "%config.engine.description%"
+				},
+				"ralph-suite.alfredMode": {
+					"type": "string",
+					"enum": [
+						"auto",
+						"off"
+					],
+					"default": "auto",
+					"description": "%config.alfredMode.description%"
+				},
+				"ralph-suite.modelProfiles": {
+					"type": "object",
+					"default": {
+						"default": {
+							"engine": "copilot",
+							"model": "",
+							"mode": "execute"
+						},
+						"bugfix": {
+							"engine": "copilot",
+							"model": "",
+							"mode": "execute"
+						},
+						"review": {
+							"engine": "copilot",
+							"model": "",
+							"mode": "review"
+						},
+						"security": {
+							"engine": "copilot",
+							"model": "",
+							"mode": "execute"
+						}
+					},
+					"properties": {
+						"default": {
+							"type": "object",
+							"properties": {
+								"engine": {
+									"type": "string",
+									"enum": [
+										"copilot",
+										"codex",
+										"claude",
+										"opencode"
+									]
+								},
+								"model": {
+									"type": "string"
+								},
+								"mode": {
+									"type": "string",
+									"enum": [
+										"execute",
+										"review"
+									]
+								}
+							}
+						},
+						"bugfix": {
+							"type": "object",
+							"properties": {
+								"engine": {
+									"type": "string",
+									"enum": [
+										"copilot",
+										"codex",
+										"claude",
+										"opencode"
+									]
+								},
+								"model": {
+									"type": "string"
+								},
+								"mode": {
+									"type": "string",
+									"enum": [
+										"execute",
+										"review"
+									]
+								}
+							}
+						},
+						"review": {
+							"type": "object",
+							"properties": {
+								"engine": {
+									"type": "string",
+									"enum": [
+										"copilot",
+										"codex",
+										"claude",
+										"opencode"
+									]
+								},
+								"model": {
+									"type": "string"
+								},
+								"mode": {
+									"type": "string",
+									"enum": [
+										"execute",
+										"review"
+									]
+								}
+							}
+						},
+						"security": {
+							"type": "object",
+							"properties": {
+								"engine": {
+									"type": "string",
+									"enum": [
+										"copilot",
+										"codex",
+										"claude",
+										"opencode"
+									]
+								},
+								"model": {
+									"type": "string"
+								},
+								"mode": {
+									"type": "string",
+									"enum": [
+										"execute",
+										"review"
+									]
+								}
+							}
+						}
+					},
+					"additionalProperties": {
+						"type": "object",
+						"properties": {
+							"engine": {
+								"type": "string",
+								"enum": [
+									"copilot",
+									"codex",
+									"claude",
+									"opencode"
+								]
+							},
+							"model": {
+								"type": "string"
+							},
+							"mode": {
+								"type": "string",
+								"enum": [
+									"execute",
+									"review"
+								]
+							}
+						}
+					},
+					"markdownDescription": "%config.modelProfiles.description%"
+				},
+				"ralph-suite.maxLoops": {
+					"type": "number",
+					"default": 5,
+					"minimum": 1,
+					"maximum": 50,
+					"description": "%config.maxLoops.description%"
+				},
+				"ralph-suite.freshContext": {
+					"type": "boolean",
+					"default": true,
+					"description": "%config.freshContext.description%"
+				},
+				"ralph-suite.boardScope": {
+					"type": "string",
+					"enum": [
+						"folder",
+						"workspace"
+					],
+					"default": "folder",
+					"description": "Kanban scope: current folder or aggregated workspace folders."
+				},
+				"ralph-suite.prdPath": {
+					"type": "string",
+					"default": "docs/ralph/prd.json",
+					"description": "%config.prdPath.description%"
+				},
+				"ralph-suite.memoriesPath": {
+					"type": "string",
+					"default": ".agent/memories.md",
+					"description": "%config.memoriesPath.description%"
+				},
+				"ralph-suite.guardrails": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [
+						"Never modify prd.json",
+						"Never delete files without confirmation",
+						"Always include tests for new features",
+						"Task states must be exactly: todo | inprogress | completed | blocked | failed — never mix or invent states",
+						"Use GitHub references as owner/repo#N; GitHub assigns N. Reserve ADR-NNN exclusively for decisions",
+						"Use the Ralph local ID exactly as supplied by the backlog and runner context; never infer GitHub numbers or renumber or migrate IDs",
+						"Only Ralph executions with explicit task ID and workspace root write .ralph signals; ad hoc, analysis, review, documentation and handoff work does not require an ID or signals",
+						"Write the exact completed status and NOTA signal only after the full task scope and quality gates pass; never during review, rejection or partial handoff",
+						"Only authorized commits are allowed; authorization must come from the user or current workflow",
+						"Always read .agent/memories.md before starting any task to load project context",
+						"Never commit secrets, API keys, tokens or passwords — use environment variables",
+						"Always validate and sanitize user inputs — never trust raw input",
+						"Run existing tests before marking a task as completed — do not break passing tests",
+						"Security checkpoints required for: authentication changes, file deletions, DB schema changes, dependency upgrades",
+						"All new code must follow the conventions already present in the codebase — check existing patterns before creating new ones",
+						"Log important decisions and architectural choices in .agent/memories.md",
+						"Never use placeholders or TODO comments in production code — implement or leave existing code",
+						"If a Ralph execution lacks explicit task ID or workspace root, ask for that context before running it"
+					],
+					"description": "%config.guardrails.description%"
+				},
+				"ralph-suite.boundaries": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [],
+					"description": "%config.boundaries.description%"
+				},
+				"ralph-suite.taskTimeoutMs": {
+					"type": "number",
+					"default": 600000,
+					"minimum": 30000,
+					"description": "%config.taskTimeoutMs.description%"
+				},
+				"ralph-suite.taskRetries": {
+					"type": "number",
+					"default": 1,
+					"minimum": 0,
+					"maximum": 5,
+					"description": "%config.taskRetries.description%"
+				},
+				"ralph-suite.minWaitMs": {
+					"type": "number",
+					"default": 15000,
+					"minimum": 0,
+					"description": "%config.minWaitMs.description%"
+				},
+				"ralph-suite.pollIntervalMs": {
+					"type": "number",
+					"default": 5000,
+					"minimum": 1000,
+					"description": "%config.pollIntervalMs.description%"
+				},
+				"ralph-suite.agentRole": {
+					"type": "string",
+					"default": "Senior Software Engineer",
+					"description": "%config.agentRole.description%"
+				},
+				"ralph-suite.agentStack": {
+					"type": "string",
+					"default": "",
+					"description": "%config.agentStack.description%"
+				},
+				"ralph-suite.agentProject": {
+					"type": "string",
+					"default": "",
+					"description": "%config.agentProject.description%"
+				},
+				"ralph-suite.agentCheckpoints": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [
+						"Delete files or directories",
+						"Modify database schemas or migrations",
+						"Change authentication or security configuration",
+						"Install or upgrade major dependencies",
+						"Refactor more than 500 lines of code",
+						"Change architecture documented in docs/"
+					],
+					"description": "%config.agentCheckpoints.description%"
+				},
+				"ralph-suite.memoryOptimizeEvery": {
+					"type": "number",
+					"default": 0,
+					"minimum": 0,
+					"description": "%config.memoryOptimizeEvery.description%"
+				},
+				"ralph-suite.memoryOptimizeReview": {
+					"type": "boolean",
+					"default": true,
+					"description": "%config.memoryOptimizeReview.description%"
+				}
+			}
+		}
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p ./",
+		"watch": "tsc -watch -p ./",
+		"package": "vsce package --no-dependencies",
+		"test": "node scripts/run-tests.js"
+	},
+	"devDependencies": {
+		"@types/mocha": "^10.0.0",
+		"@types/node": "^20.19.41",
+		"@types/vscode": "^1.103.0",
+		"@vscode/vsce": "^2.24.0",
+		"mocha": "^10.0.0",
+		"ts-node": "^10.9.0",
+		"typescript": "^5.4.0"
+	}
 }
