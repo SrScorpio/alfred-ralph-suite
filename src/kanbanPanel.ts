@@ -745,6 +745,8 @@ export class KanbanPanel {
 				}
 				PrdManager.saveRaw(this.root, imported, this.prdPathSetting());
 				vscode.window.showInformationMessage(`Created prd.json with ${imported.issues.length} issues`);
+				const ensured = RalphStateManager.ensureProjectStatusMd(this.root, String(imported.project));
+				if (ensured.created) { KanbanPanel.output?.appendLine('[Import] Created docs/project/status.md from template'); }
 				KanbanPanel.output?.appendLine(`[Import] Overwrote prd.json with ${imported.issues.length} issues`);
 				this.render();
 				break;

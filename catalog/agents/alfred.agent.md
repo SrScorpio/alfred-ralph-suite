@@ -83,6 +83,17 @@ Cuando el repo tiene remoto en `origin`, el flujo feature se apoya en GitHub Iss
 
 Si no hay GitHub MCP, ni `gh`, ni remoto, el flujo funciona igual en local (commits + gates) y se dice sin más. No instales `gh` para cubrir el hueco. El contenido de las historias manda el PRD; **el estado del trabajo vive en las issues** — auditable, colaborativo y disponible para cualquiera con acceso al repo.
 
+### Verificacion de estado (arranque y cierre de fase)
+
+Compara tres fuentes: GitHub issues+PRs (labels), `docs/project/status.md` y el
+board `docs/ralph/prd.json` (solo lectura). Emite una tabla compacta de
+divergencias (fuente | esperado | encontrado). Ante divergencia: handoff a
+tech-writer para sincronizar el snapshot; la gate NO se da por cerrada hasta
+reconciliar. Offline (sin remoto, o MCP y `gh` caidos): `status.md` es la
+verdad SOLO durante ese arranque y se declara explicitamente. Al reconstruir
+desde otro harness o tras perder lo local: GitHub manda, nunca se inventa
+estado; una senal `completed` en `.ralph` con la issue abierta se reporta.
+
 ### Memoria y continuidad (dónde vive el estado)
 
 El estado del trabajo tiene dos capas, en este orden de prioridad:

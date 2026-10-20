@@ -390,6 +390,24 @@ export class RalphStateManager {
 		return '# Estado del flujo — Proyecto\n\n> Snapshot local duplicado desde GitHub Issues y PRs (ADR-020).\n';
 	}
 
+	/**
+	 * ADR-020 / issue #16: al crear el backlog de un proyecto destino, se garantiza
+	 * que exista docs/project/status.md. Idempotente: nunca sobreescribe.
+	 */
+	static ensureProjectStatusMd(root: string, projectName: string): { created: boolean; statusPath: string } {
+		const statusAbsPath = this.statusMdPath(root);
+		if (fs.existsSync(statusAbsPath)) { return { created: false, statusPath: statusAbsPath }; }
+		const safeName = (projectName && projectName.trim()) || 'Proyecto';
+		const now = new Date();
+		const stamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+		let content = this.statusMdTemplate()
+			.replace('<nombre-del-proyecto>', safeName)
+			.replace('<fecha-hora>', stamp);
+		content = content.replace(/^\| #N \|[^\n]*/m, '| - | Sin issues publicadas todavia (' + stamp + ') |');
+		fs.mkdirSync(path.dirname(statusAbsPath), { recursive: true });
+		fs.writeFileSync(statusAbsPath, content, 'utf-8');
+		return { created: true, statusPath: statusAbsPath };
+	}
 	static migrateMemories(root: string, memoriesPath?: string): MemoryMigrationResult {
 		const statusAbsPath = this.statusMdPath(root);
 		// Misma contención que memoriesPath: si el origen configurado cae fuera
