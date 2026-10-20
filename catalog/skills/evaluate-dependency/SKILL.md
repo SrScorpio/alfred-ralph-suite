@@ -6,8 +6,8 @@ description: "Usar antes de aceptar una dependencia nueva. También: auditar paq
 # Evaluar una dependencia
 
 Antes de añadir un paquete, evalúalo y deja el veredicto en
-`docs/project/dependencies.md` (o en `plans/` si el proyecto ya documenta
-dependencias ahí).
+`docs/project/dependencies.md`; si el proyecto documenta dependencias en
+`plans/`, su contenido se migra allí con confirmación del maintainer.
 
 ## Proceso
 

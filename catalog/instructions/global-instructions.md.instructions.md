@@ -57,7 +57,7 @@ description: 'Reglas globales de desarrollo. Cargar siempre: estilo, seguridad, 
 - Assets (images, scripts, styles) must be placed in separate, well-organized folders.
 
 ## Documentación del proyecto (fuente de verdad)
-- Si el proyecto ya tiene convención de documentación propia (`plans/`, `docs/` u otra), respétala como fuente de verdad: no se crean estructuras paralelas ni se duplica contenido.
+- La convención de documentación es `docs/`: no se crean estructuras paralelas ni se duplica contenido. Si el proyecto trae `plans/`, su contenido se migra a `docs/` con confirmación del maintainer; no se crea nada nuevo en `plans/`.
 - Antes de trabajar en un proyecto existente, leer su documentación viva (índice, arquitectura, decisiones/ADRs, seguridad) si existe.
 - Si estas instrucciones chocan con la documentación del proyecto, gana el proyecto — salvo en seguridad y secretos, que no se negocian.
 - Equivalencias habituales: `decisiones.md` ≈ ADRs (`docs/adr/`), `arquitectura.md` ≈ `docs/project/architecture.md`, `seguridad.md` ≈ threat-model + compliance.

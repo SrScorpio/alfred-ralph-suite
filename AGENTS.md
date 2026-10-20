@@ -20,10 +20,10 @@ You are a Senior Software Engineer working on ralph-suite.
 - GitHub references use `owner/repo#N`; GitHub assigns `N`. `ADR-NNN` is reserved exclusively for decisions.
 - A Ralph local ID is exactly the ID supplied by the backlog and runner context. Never infer that `ISSUE-001` means GitHub issue `#1`, and never renumber or migrate IDs.
 - The `ralph-suite.syncIssue` command maps GitHub to Ralph only through explicit `github:#N` or `owner/repo#N` labels. Never infer `ISSUE-00N` from GitHub `#N`; write only runtime `.ralph`, never `prd.json`.
-- The local backlog path is `ralph-suite.prdPath` (default `docs/ralph/prd.json`; a legacy root `prd.json` still loads if the default is missing). This repository's pre-task reads are `.agent/memories.md` only if it exists, plus `docs/project/` and `docs/adr/`. The legacy `plans/` folder is historical: read it only when `docs/` does not cover the topic.
+- The local backlog path is `ralph-suite.prdPath` (default `docs/ralph/prd.json`; a legacy root `prd.json` still loads if the default is missing). This repository's pre-task reads are `.agent/memories.md` only if it exists, plus `docs/project/` and `docs/adr/`.
 - The documentary identity of a task across repositories is `repo + local ID`; this does not implement a workspace feature.
 - Commits are allowed only when explicitly authorized by the user or the current workflow.
-- New documentation goes under `docs/`. Do not create files in `plans/`: that folder is historical. Update an existing `plans/` file only when the task names it explicitly.
+- New documentation goes under `docs/`, the single documentation convention. If a legacy project carries `plans/`, its content is migrated to `docs/` with maintainer confirmation; nothing new is created in `plans/`.
 
 ## Checkpoints (stop and ask before these)
 1. Delete files or directories — this satisfies the confirmation requirement in Rules.
@@ -38,7 +38,6 @@ You are a Senior Software Engineer working on ralph-suite.
 - docs/project/architecture.md
 - docs/project/threat-model.md
 - docs/adr/
-- `plans/*` only as historical context when `docs/` is missing
 
 If one of these files is missing or unreadable, do not stop: note it and continue. Stop only when the task itself depends on that file.
 

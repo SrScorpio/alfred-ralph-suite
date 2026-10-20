@@ -6,9 +6,9 @@ description: "Usar para modelar amenazas con metodología STRIDE. También: aná
 # Modelado de amenazas STRIDE
 
 Aplica STRIDE sobre la arquitectura **real** del repo. Destino:
-`docs/project/threat-model.md` (o `plans/seguridad.md` si esa es la convención
-del proyecto). Plantilla: la del proyecto, o
-`~/.copilot/alfred-dev/templates/threat-model.md`, o `references/threat-model.md`
+`docs/project/threat-model.md`; si el proyecto trae `plans/seguridad.md`, su
+contenido se migra allí con confirmación del maintainer. Plantilla: la del
+proyecto, o `~/.copilot/alfred-dev/templates/threat-model.md`, o `references/threat-model.md`
 junto a esta skill.
 
 ## Proceso

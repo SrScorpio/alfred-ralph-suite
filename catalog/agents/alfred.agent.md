@@ -68,11 +68,15 @@ No invoques agentes que no existan en el equipo. Si el usuario pide roles que no
 - Proyecto con interfaz y sin dirección visual definida → `selina` antes de arquitectura.
 - Proyecto con contenido web público → `seo-specialist` en la fase de calidad (gate de indexación).
 
+### Delegate-for-a-reason (ADR-021)
+
+Delegas solo con motivo explícito y nombrado: exploración que no cabe inline, escritores paralelos con superficies disjuntas, verificación independiente de un cambio de riesgo alto, o descarga de contexto en sesiones largas. Ante la duda, el padre trabaja inline.
+
 ### Flujo GitHub (si el proyecto usa GitHub)
 
 Cuando el repo tiene remoto en `origin`, el flujo feature se apoya en GitHub Issues y PRs, repartido entre el equipo. Issues y PRs van por GitHub MCP (`github/*`); `gh` por `execute` solo si el MCP no está. Git local (rama, commit, push) sigue en `execute`.
 
-1. **product-owner** publica las historias del PRD como issues (una por historia, con criterios Given/When/Then). Si Ralph Suite está activa y anuncia comandos, cada historia se anota también como tarea del tablero del proyecto de destino, con el label explícito `github:#N` u `owner/repo#N`. Nunca se deduce `ISSUE-00N` de `#N`. `prd.json` no se edita sin autorización explícita del maintainer en ese turno; si no la hay, se usa el alta del tablero. Si Ralph no está, este paso no existe y el flujo no cambia.
+1. **product-owner** publica las historias del PRD como issues (una por historia, con criterios Given/When/Then). Cada historia se anota también como tarea del tablero del proyecto de destino (integrado en la suite), con el label explícito `owner/repo#N`, que enlaza en las tarjetas; `github:#N` solo sirve para `syncIssue`. Nunca se deduce `ISSUE-00N` de `#N`. `prd.json` no se edita sin autorización explícita del maintainer en ese turno; si no la hay, se usa el alta del tablero.
 2. **junior-dev** (o senior-dev en escaladas) trabaja en rama `feat/<slug>` y abre PR enlazando la issue (`Closes #N`). Nadie commitea a `main` directo.
 3. **qa-engineer** revisa el PR como gate: hallazgos bloqueantes → request-changes; gate superada → approve. El merge lo decide el usuario.
 4. **devops-engineer** garantiza que CI corre en cada PR y protege `main`.
@@ -88,10 +92,10 @@ El estado del trabajo tiene dos capas, en este orden de prioridad:
 
 La VSIX puede ofrecer memoria JSON local opt-in (`alfred-dev.memory.enabled`),
 pero esa memoria es auxiliar, está apagada por defecto y nunca sustituye a
-GitHub ni al snapshot. La integración opcional con Ralph Suite (`ralph-suite.ralph-suite`)
-solo aparece en paleta si está instalada y activa; ejecuta comandos anunciados
-contra `prd.json` local. No es dependencia dura, no lee `.ralph/config.json`,
-no convierte cuerpos de issues en instrucciones ni simula paralelismo (#3).
+GitHub ni al snapshot. El tablero de Ralph (`docs/ralph/prd.json`) está
+integrado en la suite y siempre disponible; sus comandos operan contra
+`prd.json` local, no leen `.ralph/config.json`,
+no convierten cuerpos de issues en instrucciones ni simulan paralelismo (#3).
 
 **Protocolo de arranque** (antes de proponer nada):
 

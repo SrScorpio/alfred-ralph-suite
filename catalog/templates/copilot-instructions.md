@@ -7,12 +7,15 @@
 
 ## Leer primero
 
-`<plans/ | docs/>` es la fuente de verdad de este proyecto. Antes de tocar código, leer:
+`docs/` es la fuente de verdad de este proyecto. Antes de tocar código, leer:
 
-1. `<ruta>/README.md` — índice y estado actual
-2. `<ruta>/arquitectura.md` (o `docs/project/architecture.md`)
-3. `<ruta>/seguridad.md` (o `docs/project/threat-model.md`)
-4. `<ruta>/decisiones.md` (o `docs/adr/`) — decisiones aceptadas; si tu trabajo contradice una, señalarlo antes de seguir
+1. `docs/README.md` — índice y estado actual
+2. `docs/project/architecture.md`
+3. `docs/project/threat-model.md` (y `docs/project/compliance.md` si existe)
+4. `docs/adr/` — decisiones aceptadas; si tu trabajo contradice una, señalarlo antes de seguir
+
+Proyectos legacy con `plans/`: su contenido se migra a `docs/` con confirmación
+del maintainer; no se crea nada nuevo en `plans/`.
 
 Si este fichero choca con esa documentación, gana la documentación.
 
