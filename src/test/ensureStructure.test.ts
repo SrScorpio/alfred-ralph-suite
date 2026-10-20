@@ -15,6 +15,8 @@ describe('estructura del proyecto al analizar/importar (issue #16)', () => {
 			assert.ok(content.includes('Demo'), 'usa el nombre del proyecto');
 			assert.ok(!content.includes('<nombre-del-proyecto>'), 'sin placeholder de nombre');
 			assert.ok(!content.includes('<fecha-hora>'), 'sin placeholder de fecha');
+			assert.ok(!content.includes('| #N |'), 'la fila placeholder de issues se sustituye');
+			assert.ok(content.includes('Sin issues publicadas todavia'), 'nota inicial de issues presente');
 			const before = fs.readFileSync(first.statusPath, 'utf-8');
 			const second = RalphStateManager.ensureProjectStatusMd(root, 'Otro');
 			assert.strictEqual(second.created, false, 'no sobreescribe un status existente');

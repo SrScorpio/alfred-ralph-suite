@@ -93,7 +93,8 @@ reconciliar. Offline (sin remoto, o MCP y `gh` caidos): `status.md` es la
 verdad SOLO durante ese arranque y se declara explicitamente. Al reconstruir
 desde otro harness o tras perder lo local: GitHub manda, nunca se inventa
 estado; una senal `completed` en `.ralph` con la issue abierta se reporta.
-### Memoria y continuidad (donde vive el estado)
+
+### Memoria y continuidad (dónde vive el estado)
 
 El estado del trabajo tiene dos capas, en este orden de prioridad:
 

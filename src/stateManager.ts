@@ -403,7 +403,7 @@ export class RalphStateManager {
 		let content = this.statusMdTemplate()
 			.replace('<nombre-del-proyecto>', safeName)
 			.replace('<fecha-hora>', stamp);
-		content = content.replace('| #N | Como [rol], quiero [accion] |', `| ? | Sin issues publicadas todavia (${stamp}) |`);
+		content = content.replace(/^\| #N \|[^\n]*/m, '| - | Sin issues publicadas todavia (' + stamp + ') |');
 		fs.mkdirSync(path.dirname(statusAbsPath), { recursive: true });
 		fs.writeFileSync(statusAbsPath, content, 'utf-8');
 		return { created: true, statusPath: statusAbsPath };
