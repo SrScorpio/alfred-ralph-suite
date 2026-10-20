@@ -64,17 +64,28 @@ export class RalphSidebarProvider implements vscode.TreeDataProvider<RalphSideba
 		const actions = sidebarActions(strings);
 		const root = (this.deps.getWorkspaceRoot ?? defaultWorkspaceRoot)();
 		if (!root) {
-			return [...actions, new RalphSidebarItem(strings.sidebarNoWorkspace, vscode.TreeItemCollapsibleState.None, undefined, 'info')];
+			return [...alfredActions(strings), ...actions, new RalphSidebarItem(strings.sidebarNoWorkspace, vscode.TreeItemCollapsibleState.None, undefined, 'info')];
 		}
 		const configuredPath = (this.deps.getPrdPath ?? defaultPrdPath)();
 		const prd = (this.deps.loadPrd ?? ((folder, pathSetting) => PrdManager.load(folder, pathSetting)))(root, configuredPath);
 		if (!prd) {
-			return [...actions, new RalphSidebarItem(strings.menuNoPrd, vscode.TreeItemCollapsibleState.None, undefined, 'info')];
+			return [...alfredActions(strings), ...actions, new RalphSidebarItem(strings.menuNoPrd, vscode.TreeItemCollapsibleState.None, undefined, 'info')];
 		}
-		return [...actions, ...backlogItems(prd, strings)];
+		return [...alfredActions(strings), ...actions, ...backlogItems(prd, strings)];
 	}
 }
 
+/** Acciones de Alfred: presencia en la Activity Bar (Hablar, Preguntar, Pausar, Retomar, Actualizar). */
+export function alfredActions(strings: UIStrings): RalphSidebarItem[] {
+	const none = vscode.TreeItemCollapsibleState.None;
+	return [
+		new RalphSidebarItem(strings.sidebarAskAlfred, none, 'alfred-ralph.openChat', 'comment-discussion'),
+		new RalphSidebarItem(strings.sidebarAskStatus, none, 'alfred-ralph.progress', 'graph'),
+		new RalphSidebarItem(strings.sidebarPauseWork, none, 'alfred-ralph.pause', 'debug-pause'),
+		new RalphSidebarItem(strings.sidebarResumeWork, none, 'alfred-ralph.retomar', 'debug-continue'),
+		new RalphSidebarItem(strings.sidebarRefreshStatus, none, 'alfred-ralph.refreshStatus', 'refresh'),
+	];
+}
 /** Acciones que no leen el PRD: tablero, runner y menú. */
 export function sidebarActions(strings: UIStrings): RalphSidebarItem[] {
 	const none = vscode.TreeItemCollapsibleState.None;

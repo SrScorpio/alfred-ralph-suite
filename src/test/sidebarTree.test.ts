@@ -3,8 +3,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { _doActivate } from '../activate';
-import { t } from '../i18n';
+import { detectLocale, t } from '../i18n';
 import {
+	alfredActions,
 	backlogItems,
 	RALPH_SIDEBAR_VIEW_ID,
 	RALPH_VIEW_CONTAINER_ID,
@@ -101,7 +102,7 @@ describe('Ralph Suite sidebar', () => {
 		assert.deepStrictEqual(backlogItems({ project: '', issues: [] }, strings).map(item => String(item.label))[0], strings.sidebarBacklog);
 	});
 
-	it('sin workspace ni PRD sigue ofreciendo tablero, runner y menú', () => {
+	it('sin workspace ni PRD sigue ofreciendo Alfred, tablero, runner y menú', () => {
 		const strings = t('en');
 		const empty = new RalphSidebarProvider({
 			getWorkspaceRoot: () => undefined,
@@ -117,8 +118,18 @@ describe('Ralph Suite sidebar', () => {
 		for (const children of [empty.getChildren(), missing.getChildren()]) {
 			assert.deepStrictEqual(
 				children.filter(item => item.command).map(item => item.command?.command),
-				['ralph-suite.openKanban', 'ralph-suite.runTask', 'ralph-suite.startRunner', 'ralph-suite.stopRunner', 'ralph-suite.showMenu'],
+				['alfred-ralph.openChat', 'alfred-ralph.progress', 'alfred-ralph.pause', 'alfred-ralph.retomar', 'alfred-ralph.refreshStatus', 'ralph-suite.openKanban', 'ralph-suite.runTask', 'ralph-suite.startRunner', 'ralph-suite.stopRunner', 'ralph-suite.showMenu'],
 			);
 		}
 	});
+describe('seccion Alfred en la Activity Bar', () => {
+	it('expone Hablar, Preguntar estado, Pausar, Retomar y Actualizar con comandos alfred-ralph', () => {
+		const strings = t(detectLocale());
+		const items = alfredActions(strings);
+		assert.strictEqual(items.length, 5);
+		const commands = items.map(item => item.command && item.command.command);
+		assert.deepStrictEqual(commands, ['alfred-ralph.openChat', 'alfred-ralph.progress', 'alfred-ralph.pause', 'alfred-ralph.retomar', 'alfred-ralph.refreshStatus']);
+		assert.ok(items.every(item => Boolean(item.iconPath)));
+	});
+});
 });

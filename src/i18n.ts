@@ -78,6 +78,11 @@ export interface UIStrings {
 
 	// Activity Bar sidebar
 	sidebarOpenMenu: string;
+	sidebarAskAlfred: string;
+	sidebarAskStatus: string;
+	sidebarPauseWork: string;
+	sidebarResumeWork: string;
+	sidebarRefreshStatus: string;
 	sidebarNoWorkspace: string;
 	sidebarBacklog: string;
 	sidebarProgress: (done: number, total: number, pct: number) => string;
@@ -184,6 +189,11 @@ const en: UIStrings = {
 	menuDescSyncIssue: 'Sync GitHub issue status to the local task',
 	menuDescSettings: 'Configure Ralph Suite',
 	sidebarOpenMenu: 'Open menu',
+	sidebarAskAlfred: 'Talk to Alfred',
+	sidebarAskStatus: 'Ask Alfred about status',
+	sidebarPauseWork: 'Pause work',
+	sidebarResumeWork: 'Resume work',
+	sidebarRefreshStatus: 'Refresh status',
 	sidebarNoWorkspace: 'No workspace open',
 	sidebarBacklog: 'Backlog',
 	sidebarProgress: (done, total, pct) => `${done}/${total} completed (${pct}%)`,
@@ -280,6 +290,11 @@ const es: UIStrings = {
 	menuDescSyncIssue: 'Sincronizar el estado de un issue GitHub con la tarea local',
 	menuDescSettings: 'Configurar Ralph Suite',
 	sidebarOpenMenu: 'Abrir menú',
+	sidebarAskAlfred: 'Hablar con Alfred',
+	sidebarAskStatus: 'Preguntar a Alfred por el estado',
+	sidebarPauseWork: 'Pausar trabajo',
+	sidebarResumeWork: 'Retomar trabajo',
+	sidebarRefreshStatus: 'Actualizar estado',
 	sidebarNoWorkspace: 'Sin workspace abierto',
 	sidebarBacklog: 'Backlog',
 	sidebarProgress: (done, total, pct) => `${done}/${total} completadas (${pct}%)`,
