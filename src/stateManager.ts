@@ -390,6 +390,7 @@ export class RalphStateManager {
 		if (!statusContent.endsWith('\n')) { statusContent += '\n'; }
 
 		const heading = '## Conocimiento migrado (memories.md)';
+		if (statusContent.includes(heading)) { return { migrated: false, statusPath: statusAbsPath, lines: 0, alreadyMigrated: true }; }
 		const merged = `${statusContent}\n${heading}\n\n${memoryContent}\n`;
 		fs.writeFileSync(statusAbsPath, merged, 'utf-8');
 
@@ -402,6 +403,8 @@ export class RalphStateManager {
 }
 
 export interface MemoryMigrationResult {
+	/** true si ya exist?a la secci?n migrada y no se volvi? a fusionar */
+	alreadyMigrated?: boolean;
 	/** true cuando había contenido en memories.md y se fusionó en status.md */
 	migrated: boolean;
 	/** ruta absoluta de docs/project/status.md */

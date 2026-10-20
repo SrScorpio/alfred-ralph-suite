@@ -91,6 +91,20 @@ describe('ADR-020 — memoria única en docs/project/status.md', () => {
 		assert.ok(status.includes('- ADR-020 manda'));
 	});
 
+	it('segunda llamada a migrateMemories no duplica la seccion migrada', () => {
+		fs.writeFileSync(path.join(root, '.agent', 'memories.md'), '## Decisions\n- ADR-020 manda\n', 'utf-8');
+
+		const first = RalphStateManager.migrateMemories(root);
+		const second = RalphStateManager.migrateMemories(root);
+
+		assert.strictEqual(first.migrated, true);
+		assert.strictEqual(second.migrated, false);
+		assert.strictEqual(second.alreadyMigrated, true);
+		const status = fs.readFileSync(second.statusPath, 'utf-8');
+		const occurrences = status.split('## Conocimiento migrado (memories.md)').length - 1;
+		assert.strictEqual(occurrences, 1, 'la seccion migrada aparece una sola vez');
+	});
+
 	it('migrateMemories sin memories.md devuelve migrated:false', () => {
 		const result = RalphStateManager.migrateMemories(root);
 

@@ -630,7 +630,7 @@ function guardrailsPanel(guardrails: string[], boundaries: string[]): string {
 
 function memoriesPanel(memories: string): string {
 	return `<details class="memories-panel">
-  <  summary>🧠 Project Memory <span class="mem-hint">(edit in docs/project/status.md)</span></summary>
+  <summary>🧠 Project Memory <span class="mem-hint">(edit in docs/project/status.md)</span></summary>
   <pre class="memories-content">${esc(memories)}</pre>
 </details>`;
 }
