@@ -22,7 +22,7 @@ sesión por acción (#13), el modo por defecto Autopilot (#14) y los permisos
 Decisiones tomadas por el maintainer el 19/10/2026 y no renegotiables aquí:
 
 - Auto Run serial: concurrencia 1. No se simula paralelismo.
-- El límite total de 15 tareas por ciclo se mantiene.
+- El límite total de tareas por ciclo (`maxLoops`) se mantiene.
 - `maxParallelTasks` queda diferido hasta que exista API soportada.
 - Las sesiones nuevas de trabajo entran por `@alfred` como orquestador.
 - «Autorizar todo» solo vía la opción oficial del host, en workspaces de
@@ -31,7 +31,7 @@ Decisiones tomadas por el maintainer el 19/10/2026 y no renegotiables aquí:
 ## Decisión
 
 1. **Auto Run serial (concurrencia 1).** Una sola tarea en ejecución; el límite
-   de 15 tareas por ciclo no cambia. N llamadas concurrentes a un comando que
+   de tareas por ciclo (`maxLoops`) no cambia. N llamadas concurrentes a un comando que
    comparte una única conversación y un único `AbortSignal` no son paralelismo:
    son una carrera (ADR-016, opción B, descartada de nuevo).
 

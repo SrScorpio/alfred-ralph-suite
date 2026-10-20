@@ -3,7 +3,7 @@
 - **Estado:** aceptado
 - **Fecha:** 19 de octubre de 2026
 - **Issue:** [SrScorpio/alfred-ralph-suite#21](https://github.com/SrScorpio/alfred-ralph-suite/issues/21) (ejecuta su decisión: postura mixta TDD→ODD)
-- **Relacionado:** fichas actualizadas: `junior-dev`, `qa-engineer`, `alfred`, `product-owner`; plantilla nueva `catalog/templates/odd-feature.md`
+- **Relacionado:** fichas actualizadas: `junior-dev`, `qa-engineer`, `alfred`, `product-owner`, `tech-writer`; plantilla nueva `catalog/templates/odd-feature.md`
 
 ## Contexto
 
