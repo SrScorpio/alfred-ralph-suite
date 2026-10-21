@@ -88,6 +88,8 @@ describe('activation command guards', () => {
 			assert.strictEqual(boardRefreshes, 1);
 			assert.strictEqual(sidebarRefreshes, 1);
 			assert.ok(capture.handlers.has('ralph-suite.syncIssue'));
+			assert.ok(capture.handlers.has('ralph-suite.showHostChatDefaults'));
+			assert.ok(capture.handlers.has('ralph-suite.openHostChatSettings'));
 		} finally {
 			capture.restore();
 			(KanbanPanel as any).refresh = originalRefresh;
