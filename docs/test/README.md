@@ -28,6 +28,30 @@ npm test -- --grep "nombre del describe o del it"
 `run-tests.js` pasa sus argumentos extra a mocha. Úsalo para iterar sobre una
 suite concreta; la suite completa es la referencia antes de cerrar.
 
+## Regresiones de integridad
+
+`integrityAudit.test.ts` cubre identidad literal, colisiones, dependencias tras
+reordenación, mapeo GitHub unívoco, override `todo`, reset y lectura sin mutación.
+`secretHook.test.ts` ejecuta shell/Node únicamente en repositorios Git fixture:
+no instala hooks en el proyecto real ni necesita commits. Comprueba `exit 0`,
+fallos con/sin `exit`, salida del guard, preservación e idempotencia.
+
+Estas suites crean fixtures únicos en `os.tmpdir()` y los retiran en `afterEach`;
+no redefinir `TEMP`/`TMP` dentro del proyecto. Los tests del hook aíslan las variables
+`GIT_*` (restauradas al terminar), usan configuración global/system y templates
+controlados dentro del fixture y fijan `core.hooksPath` local antes de instalar.
+Comprueban la ruta efectiva dentro del fixture, incluso con una configuración
+global de prueba que apunta a una ruta absoluta. Nunca utilizan hooks globales
+reales. Cubren el rechazo sin escrituras de dispatchers Husky, referencias a
+`$0`/`BASH_SOURCE`, intérpretes no compatibles y reinstalación de hooks preservados.
+En Windows con ejecución de scripts restringida, `npm.cmd` evita el bloqueo de
+`npm.ps1` sin cambiar la política de seguridad.
+
+La prueba de `moveCard` utiliza el singleton `vscodeMock.js`; acredita el handler
+y la recarga del modelo, no interacción visual real. El test de carrera de
+`getStatus` intercepta una única lectura y publica otra señal inmediatamente
+después: la consulta debe devolver su snapshot sin sobreescribir la nueva señal.
+
 ## Niveles
 
 | Nivel | Qué cubre | Dónde |

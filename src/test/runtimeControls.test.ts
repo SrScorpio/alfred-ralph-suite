@@ -1,10 +1,11 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
-import { getTaskRunBlockReason, pendingTasksMessage, runTaskWithRetry } from '../commands/task';
+import { confirmTaskRunRecovery, getTaskRunBlockReason, pendingTasksMessage, runTaskWithRetry } from '../commands/task';
 import { shouldCompleteTask } from '../kanbanPanel';
 import { requireWorkspaceTrust } from '../workspaceTrust';
 import { RalphStateManager } from '../stateManager';
 import { KanbanPanel } from '../kanbanPanel';
+import { getTaskRunReservation, markTaskRunSending, markTaskRunUnknown, recoverTaskRunReservation, reserveTaskRun } from '../taskRunReservation';
 
 describe('Ralph runtime controls', () => {
 	it('blocks every non-todo task status', () => {
@@ -47,6 +48,8 @@ describe('Ralph runtime controls', () => {
 			assert.strictEqual(RalphStateManager.getStatus(root, task.id), 'todo');
 		} finally {
 			(vscode.commands as any).executeCommand = executeCommand;
+			const pending = getTaskRunReservation();
+			if (pending?.phase === 'recovery') { recoverTaskRunReservation(pending, true); }
 		}
 	});
 
@@ -80,10 +83,12 @@ describe('Ralph runtime controls', () => {
 			assert.notStrictEqual(RalphStateManager.getStatus(root, task.id), 'failed');
 		} finally {
 			(vscode.commands as any).executeCommand = executeCommand;
+			const pending = getTaskRunReservation();
+			if (pending?.phase === 'recovery') { recoverTaskRunReservation(pending, true); }
 		}
 	});
 
-	it('clears an in-progress runtime marker and releases the live-run lock after abort', async () => {
+	it('retains an ambiguous post-send lock after abort until explicit recovery', async () => {
 		const root = require('os').tmpdir();
 		const task = { id: `Ralph-abort-active-${Date.now()}`, title: 'Task' };
 		const controller = new AbortController();
@@ -95,10 +100,15 @@ describe('Ralph runtime controls', () => {
 			assert.strictEqual(KanbanPanel.isTaskActive(root, task.id), true);
 			controller.abort();
 			await run;
-			assert.strictEqual(RalphStateManager.getStatus(root, task.id), 'todo');
-			assert.strictEqual(KanbanPanel.isTaskActive(root, task.id), false);
+			assert.strictEqual(RalphStateManager.getStatus(root, task.id), 'inprogress');
+			const pending = getTaskRunReservation();
+			assert.strictEqual(pending?.phase, 'recovery');
+			assert.strictEqual(KanbanPanel.isTaskActive(root, task.id), true);
+			assert.strictEqual(recoverTaskRunReservation(pending!, true), true);
 		} finally {
 			(vscode.commands as any).executeCommand = executeCommand;
+			const pending = getTaskRunReservation();
+			if (pending?.phase === 'recovery') { recoverTaskRunReservation(pending, true); }
 			KanbanPanel.endTask(root, task.id);
 		}
 	});
@@ -118,13 +128,18 @@ describe('Ralph runtime controls', () => {
 		};
 		try {
 			await runTaskWithRetry(task, 'prompt', root, false, 0, 100, 1, { appendLine: () => undefined } as any, controller.signal);
-			assert.strictEqual(RalphStateManager.getStatus(root, task.id), 'todo');
+			assert.strictEqual(RalphStateManager.getStatus(root, task.id), 'inprogress');
+			const pending = getTaskRunReservation();
+			assert.strictEqual(pending?.phase, 'recovery');
+			assert.strictEqual(recoverTaskRunReservation(pending!, true), true);
 		} finally {
 			(vscode.commands as any).executeCommand = executeCommand;
+			const pending = getTaskRunReservation();
+			if (pending?.phase === 'recovery') { recoverTaskRunReservation(pending, true); }
 		}
 	});
 
-	it('does not mark a task in progress when sendToChat times out', async () => {
+	it('does not retry or release the reservation when sendToChat times out', async () => {
 		const root = require('os').tmpdir();
 		const task = { id: `Ralph-timeout-send-${Date.now()}`, title: 'Task' };
 		const executeCommand = vscode.commands.executeCommand;
@@ -138,9 +153,83 @@ describe('Ralph runtime controls', () => {
 		try {
 			await runTaskWithRetry(task, 'prompt', root, false, 0, 20, 1, { appendLine: () => undefined } as any);
 			assert.strictEqual(opens, 1);
-			assert.strictEqual(RalphStateManager.getStatus(root, task.id), 'todo');
+			assert.strictEqual(RalphStateManager.getStatus(root, task.id), 'inprogress');
+			const pending = getTaskRunReservation();
+			assert.strictEqual(pending?.phase, 'recovery');
+			assert.strictEqual(recoverTaskRunReservation(pending!, true), true);
 		} finally {
 			(vscode.commands as any).executeCommand = executeCommand;
+			const pending = getTaskRunReservation();
+			if (pending?.phase === 'recovery') { recoverTaskRunReservation(pending, true); }
+		}
+	});
+
+it('retains recovery when an ambiguous send is already marked completed', async () => {
+		const root = require('os').tmpdir();
+		const task = { id: `Ralph-completed-unknown-${Date.now()}`, title: 'Task' };
+		const executeCommand = vscode.commands.executeCommand;
+		(vscode.commands as any).executeCommand = async (command: string) => {
+			if (command === 'workbench.action.chat.open') {
+				RalphStateManager.setCompleted(root, task.id);
+				return new Promise<void>(() => undefined);
+			}
+		};
+		try {
+			await runTaskWithRetry(task, 'prompt', root, false, 0, 20, 1, { appendLine: () => undefined } as any);
+			assert.strictEqual(RalphStateManager.getStatus(root, task.id), 'completed');
+			const pending = getTaskRunReservation();
+			assert.strictEqual(pending?.phase, 'recovery');
+			assert.strictEqual(recoverTaskRunReservation(pending!, true), true);
+		} finally {
+			(vscode.commands as any).executeCommand = executeCommand;
+			const pending = getTaskRunReservation();
+			if (pending?.phase === 'recovery') { recoverTaskRunReservation(pending, true); }
+		}
+	});
+
+	it('keeps one recovery confirmation and treats cancellation as binding', async () => {
+		const reservation = reserveTaskRun(require('os').tmpdir(), 'RECOVERY-SHARED');
+		assert.ok(reservation);
+		assert.strictEqual(markTaskRunSending(reservation!), true);
+		assert.strictEqual(markTaskRunUnknown(reservation!), true);
+		const original = vscode.window.showWarningMessage;
+		let calls = 0;
+		let resolveDialog: ((value: string | undefined) => void) | undefined;
+		(vscode.window as any).showWarningMessage = () => {
+			calls++;
+			return new Promise(resolve => { resolveDialog = resolve; });
+		};
+		try {
+			const first = confirmTaskRunRecovery();
+			const second = confirmTaskRunRecovery();
+			assert.strictEqual(first, second);
+			assert.strictEqual(calls, 1);
+			resolveDialog?.(undefined);
+			assert.strictEqual(await first, false);
+			assert.strictEqual(await second, false);
+			assert.strictEqual(getTaskRunReservation(), reservation);
+		} finally {
+			(vscode.window as any).showWarningMessage = original;
+			recoverTaskRunReservation(reservation!, true);
+		}
+	});
+
+	it('keeps a declined recovery bound to the same reservation', async () => {
+		const reservation = reserveTaskRun(require('os').tmpdir(), 'RECOVERY-DECLINED');
+		assert.ok(reservation);
+		assert.strictEqual(markTaskRunSending(reservation!), true);
+		assert.strictEqual(markTaskRunUnknown(reservation!), true);
+		const original = vscode.window.showWarningMessage;
+		let calls = 0;
+		(vscode.window as any).showWarningMessage = async () => { calls++; return undefined; };
+		try {
+			assert.strictEqual(await confirmTaskRunRecovery(), false);
+			assert.strictEqual(await confirmTaskRunRecovery(), false);
+			assert.strictEqual(calls, 1);
+			assert.strictEqual(getTaskRunReservation(), reservation);
+		} finally {
+			(vscode.window as any).showWarningMessage = original;
+			recoverTaskRunReservation(reservation!, true);
 		}
 	});
 

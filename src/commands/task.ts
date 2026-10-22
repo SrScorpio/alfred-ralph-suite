@@ -7,8 +7,19 @@
 import * as vscode from 'vscode';
 import { RalphStateManager } from '../stateManager';
 import { KanbanPanel } from '../kanbanPanel';
-import { sendToChat } from '../chatLauncher';
+import { sendToChatWithOutcome } from '../chatLauncher';
 import { checkDangerousCommand } from '../security/dangerGuard';
+import {
+	markTaskRunSending,
+	markTaskRunNotSent,
+	markTaskRunSent,
+	markTaskRunUnknown,
+	getTaskRunReservation,
+	releaseTaskRunReservation,
+	reserveTaskRun,
+	recoverTaskRunReservation,
+	type TaskRunReservation,
+} from '../taskRunReservation';
 
 // ── Sleep utility ────────────────────────────────────────────────────────────
 
@@ -78,86 +89,121 @@ function waitWithAbort(ms: number, signal?: AbortSignal): Promise<boolean> {
 
 // ── Task runner with retries ─────────────────────────────────────────────────
 
+let recoveryConfirmation: Promise<boolean> | undefined;
+let recoveryDeclined: TaskRunReservation | undefined;
+
+/** Share one confirmation. A decline remains bound to that reservation token. */
+export function confirmTaskRunRecovery(): Promise<boolean> {
+	const pending = getTaskRunReservation();
+	if (pending && pending === recoveryDeclined && pending.phase === 'recovery') { return Promise.resolve(false); }
+	if (!recoveryConfirmation) {
+		recoveryConfirmation = confirmTaskRunRecoveryOnce().finally(() => { recoveryConfirmation = undefined; });
+	}
+	return recoveryConfirmation;
+}
+
+async function confirmTaskRunRecoveryOnce(): Promise<boolean> {
+	const pending = getTaskRunReservation();
+	if (!pending || pending.phase !== 'recovery') { return false; }
+	const confirm = 'He comprobado y detenido al agente anterior; recuperar';
+	const answer = await vscode.window.showWarningMessage(
+		`Ralph: el env?o de ${pending.taskId} pudo llegar al agente y no se puede confirmar su estado. Comprueba el chat y det?n el agente anterior antes de recuperar.`,
+		{ modal: true }, confirm,
+	);
+	if (answer !== confirm || getTaskRunReservation() !== pending || pending.phase !== 'recovery') {
+		if (getTaskRunReservation() === pending && pending.phase === 'recovery') { recoveryDeclined = pending; }
+		return false;
+	}
+	recoveryDeclined = undefined;
+	const recovered = recoverTaskRunReservation(pending, true);
+	if (recovered) {
+		if (RalphStateManager.getStatus(pending.root, pending.taskId) !== 'completed') {
+			RalphStateManager.setTodoOverride(pending.root, pending.taskId);
+		}
+		KanbanPanel.endTask(pending.root, pending.taskId);
+		KanbanPanel.refresh();
+	}
+	return recovered;
+}
+
 export async function runTaskWithRetry(
 	task: any, prompt: string, root: string,
 	freshContext: boolean, minWaitMs: number, timeoutMs: number,
 	retries: number, output: vscode.OutputChannel, signal?: AbortSignal,
-	agent?: string,
+	agent?: string, reservation?: TaskRunReservation,
 ): Promise<void> {
-	const pollMs = vscode.workspace.getConfiguration('ralph-suite').get<number>('pollIntervalMs', 5000);
-	KanbanPanel.beginTask(root, task.id);
-	// Issue #22 (guardrails): el prompt viaja al chat, donde la extensión no
-	// puede interceptar la ejecución; al menos deja la advertencia en el Output.
-	const danger = checkDangerousCommand(prompt);
-	if (danger) {
-		output.appendLine(`[Ralph] ⚠ ${task.id}: comando destructivo en el prompt (${danger.pattern}) — ${danger.guidance}`);
+	// Keep the setting/API compatible, but never retry work that may be active remotely.
+	void retries;
+	const owner = reservation ?? reserveTaskRun(root, task.id);
+	if (!owner) {
+		vscode.window.showWarningMessage('Ralph: ya hay una ejecuci?n reservada en esta instancia.');
+		return;
 	}
+	let preserveReservation = false;
+	let activeTracked = false;
 	try {
-	for (let attempt = 1; attempt <= retries + 1; attempt++) {
-		if (signal?.aborted) { return; }
-		if (attempt > 1) {
-			output.appendLine(`[Ralph] Retry ${attempt}/${retries + 1} for ${task.id}`);
+		const pollMs = vscode.workspace.getConfiguration('ralph-suite').get<number>('pollIntervalMs', 5000);
+		KanbanPanel.beginTask(root, task.id);
+		activeTracked = true;
+		const danger = checkDangerousCommand(prompt);
+		if (danger) {
+			output.appendLine(`[Ralph] ⚠ ${task.id}: comando destructivo en el prompt (${danger.pattern}) — ${danger.guidance}`);
 		}
+		if (signal?.aborted) { return; }
+		if (!markTaskRunSending(owner)) { return; }
+		let outcome;
 		try {
-			const sent = await sendToChat(prompt, {
+			outcome = await sendToChatWithOutcome(prompt, {
 				freshContext,
-				fallbackMessage: 'Prompt copied — paste in Chat.',
+				fallbackMessage: 'Prompt copied ? paste in Chat.',
 				timeoutMs: Math.min(timeoutMs, 10000),
 				signal,
 				agent,
 			});
-			if (!sent) {
-				vscode.window.showWarningMessage(`Ralph: no se pudo abrir Chat para ${task.id}. La tarea no se ha iniciado.`);
-				return;
-			}
 		} catch {
-			// sendToChat already handles the clipboard fallback
+			// An exception after chat.open began does not prove that nothing was sent.
+			outcome = 'unknown';
+		}
+		if (outcome === 'not-sent') {
+			markTaskRunNotSent(owner);
+			vscode.window.showWarningMessage(`Ralph: no se pudo abrir Chat para ${task.id}. La tarea no se ha iniciado.`);
 			return;
 		}
-		if (signal?.aborted) { return; }
-
+		if (outcome === 'unknown' || signal?.aborted) {
+			preserveReservation = markTaskRunUnknown(owner);
+			if (RalphStateManager.getStatus(root, task.id) !== 'completed') {
+				RalphStateManager.setInProgress(root, task.id, task.title);
+			}
+			KanbanPanel.refresh();
+			return;
+		}
+		if (!markTaskRunSent(owner)) { return; }
+		if (RalphStateManager.getStatus(root, task.id) === 'completed') { return; }
 		RalphStateManager.setInProgress(root, task.id, task.title);
 		KanbanPanel.refresh();
-		output.appendLine(`[Ralph] Task ${task.id} started — waiting ${minWaitMs / 1000}s`);
+		output.appendLine(`[Ralph] Task ${task.id} started ? waiting ${minWaitMs / 1000}s`);
 		if (!await waitWithAbort(minWaitMs, signal)) {
-			RalphStateManager.setTodoOverride(root, task.id);
-			KanbanPanel.refresh();
+			preserveReservation = markTaskRunUnknown(owner);
 			return;
 		}
-
 		const startedAt = Date.now();
-		let completed = false;
 		while (Date.now() - startedAt < timeoutMs - minWaitMs) {
 			if (RalphStateManager.getStatus(root, task.id) === 'completed') {
-				completed = true;
-				output.appendLine(`[Ralph] ✓ ${task.id} completed`);
-				break;
+				output.appendLine(`[Ralph] ? ${task.id} completed`);
+				return;
 			}
 			if (!await waitWithAbort(pollMs, signal)) {
-				RalphStateManager.setTodoOverride(root, task.id);
-				KanbanPanel.refresh();
+				preserveReservation = markTaskRunUnknown(owner);
 				return;
 			}
 		}
-		if (completed) { return; }
-		if (signal?.aborted) { return; }
-
-		output.appendLine(`[Ralph] ⚠ ${task.id} timed out`);
-		if (attempt <= retries) {
-			RalphStateManager.reset(root, task.id);
-			KanbanPanel.refresh();
-		} else {
-			RalphStateManager.setFailed(root, task.id, `Timed out after ${retries + 1} attempts`);
-			KanbanPanel.refresh();
-			vscode.window.showWarningMessage(`Ralph: ${task.id} timed out`, 'Open Output')
-				.then(a => { if (a === 'Open Output') { output.show(); } });
-		}
-	}
+		if (RalphStateManager.getStatus(root, task.id) === 'completed') { return; }
+		output.appendLine(`[Ralph] ? ${task.id} timed out; dispatch outcome remains unknown`);
+		preserveReservation = markTaskRunUnknown(owner);
 	} finally {
-		if (signal?.aborted && RalphStateManager.getStatus(root, task.id) === 'inprogress') {
-			RalphStateManager.setTodoOverride(root, task.id);
-			KanbanPanel.refresh();
+		if (!preserveReservation) {
+			releaseTaskRunReservation(owner);
+			if (activeTracked) { KanbanPanel.endTask(root, task.id); }
 		}
-		KanbanPanel.endTask(root, task.id);
 	}
 }

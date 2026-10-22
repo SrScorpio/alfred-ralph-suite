@@ -46,9 +46,17 @@ export function syncIssue(
 	}
 
 	const issue = matches[0];
+	const mappingLabels = issue.labels.filter(label => /^(github:#\d+|[^/:\s]+\/[^/\s]+#\d+)$/.test(label));
+	const numbers = new Set(mappingLabels.map(label => label.slice(label.lastIndexOf('#') + 1)));
+	const repositories = new Set(mappingLabels
+		.filter(label => !label.startsWith('github:'))
+		.map(label => label.slice(0, label.lastIndexOf('#')).toLowerCase()));
+	if (repositories.size > 1 || numbers.size > 1) {
+		throw new Error(`Mapeo ambiguo para GitHub issue #${githubIssueNumber}: varios repositorios o números en la misma tarea; el mapeo debe ser único.`);
+	}
 	switch (status) {
 		case 'todo':
-			RalphStateManager.reset(workspaceRoot, issue.id);
+			RalphStateManager.setTodoOverride(workspaceRoot, issue.id);
 			return;
 		case 'inprogress':
 			RalphStateManager.setStatus(workspaceRoot, issue.id, 'inprogress', issue.title);
