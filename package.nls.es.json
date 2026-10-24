@@ -10,7 +10,7 @@
 	"config.guardrails.description": "Reglas que se escriben en el prompt de cada tarea. En modo Alfred no se aplican: mandan las fichas de los agentes.",
 	"config.boundaries.description": "Rutas que el agente no debe modificar (por ejemplo legacy/** o *.lock). En modo Alfred no se aplican.",
 	"config.taskTimeoutMs.description": "Milisegundos de espera a que la tarea escriba su senal de completada. No cierra el chat. Por defecto 600000 (10 minutos).",
-	"config.taskRetries.description": "Reintentos si la senal de completada no llega a tiempo. Cada reintento vuelve a abrir el chat. Por defecto 1.",
+	"config.taskRetries.description": "Obsoleto por seguridad: se conserva la opción, pero Ralph no relanza automáticamente tareas que pudieron enviarse al chat. Por defecto 1.",
 	"config.minWaitMs.description": "Tiempo mínimo en milisegundos a esperar antes de empezar a comprobar si la tarea se ha completado. Por defecto: 15000 (15 segundos).",
 	"config.pollIntervalMs.description": "Con qué frecuencia en milisegundos comprobar si el agente ha completado la tarea. Por defecto: 5000 (5 segundos).",
 	"config.agentRole.description": "Solo con alfredMode en off. Con el modo Alfred, que es el de por defecto, el proyecto lo arranca Alfred y este ajuste no se usa. Rol que se escribe en AGENTS.md al generar el paquete del proyecto.",

@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { RalphStateManager, safeTaskId } from './stateManager';
+import { RalphStateManager, safeTaskId, TaskIdentityError } from './stateManager';
 
 export const DEFAULT_PRD_PATH = 'docs/ralph/prd.json';
 export const LEGACY_PRD_PATH = 'prd.json';
@@ -130,18 +130,20 @@ function asStringArray(raw: unknown): string[] {
 }
 
 function uniqueId(rawId: unknown, index: number, usedIds: Set<string>): string {
-	const base = safeTaskId(asString(rawId, `ISSUE-${String(index + 1).padStart(3, '0')}`));
-	let id = base;
-	let n = 2;
-	while (usedIds.has(id)) {
-		id = `${base}-${n}`;
-		n++;
+	// Numeric legacy IDs already have a string identity in the runtime protocol.
+	const id = safeTaskId(typeof rawId === 'number' && Number.isSafeInteger(rawId) ? String(rawId) : rawId);
+	const runtimeKey = id.toLowerCase();
+	if (usedIds.has(runtimeKey)) {
+		throw new TaskIdentityError(`ID Ralph duplicado o colisión de nombre runtime: ${JSON.stringify(id)} (elemento ${index + 1}). No se renombra el backlog.`);
 	}
-	usedIds.add(id);
+	usedIds.add(runtimeKey);
 	return id;
 }
 
 function normalizeItem(raw: RawItem, index: number, usedIds: Set<string>): Issue {
+	if (raw.dependencies !== undefined && !Array.isArray(raw.dependencies)) {
+		throw new TaskIdentityError(`ID de dependencia inválido en elemento ${index + 1}: dependencies debe ser un array.`);
+	}
 	const description = asString(raw.description);
 	const title = asString(raw.title, description.split(/\r?\n/, 1)[0] || 'Untitled task');
 	const acceptanceCriteria = asStringArray(raw.acceptanceCriteria);
@@ -153,7 +155,7 @@ function normalizeItem(raw: RawItem, index: number, usedIds: Set<string>): Issue
 		priority:           normalizePriority(raw.priority),
 		status:             normalizeStatus(raw.status),
 		acceptanceCriteria: acceptanceCriteria.length > 0 ? acceptanceCriteria : asStringArray(raw.acceptance),
-		dependencies:       asStringArray(raw.dependencies).map(safeTaskId),
+		dependencies:       (Array.isArray(raw.dependencies) ? raw.dependencies : []).map(safeTaskId),
 		labels:             asStringArray(raw.labels).map(l => l.slice(0, 80)),
 	};
 }
@@ -246,9 +248,12 @@ export class PrdManager {
 			if (!raw) { return null; }
 			const rawItems: RawItem[] = recognizedItems(raw) ?? [];
 			const usedIds = new Set<string>();
-			const issues: Issue[] = rawItems
-				.filter((item): item is RawItem => !!item && typeof item === 'object')
-				.map((item, index) => normalizeItem(item, index, usedIds));
+			const issues: Issue[] = rawItems.map((item, index) => {
+				if (!item || typeof item !== 'object') {
+					throw new TaskIdentityError(`ID Ralph inválido: el elemento ${index + 1} no es una tarea.`);
+				}
+				return normalizeItem(item, index, usedIds);
+			});
 			const prd: Prd = {
 				project:     asString(raw.project, asString(raw.projectName, 'Unnamed Project')).slice(0, 160),
 				description: asString(raw.description, asString(raw.story)).slice(0, 2000),
@@ -260,6 +265,8 @@ export class PrdManager {
 				if (statuses[issue.id]) {
 					issue.status = statuses[issue.id];
 				}
+			}
+			for (const issue of prd.issues) {
 				if (issue.status === 'todo' && issue.dependencies.length > 0) {
 					const blocked = issue.dependencies.some(dep =>
 						statuses[dep] !== 'completed'
@@ -270,6 +277,7 @@ export class PrdManager {
 			}
 			return prd;
 		} catch (e) {
+			if (e instanceof TaskIdentityError) { throw e; }
 			console.error('[Ralph] Failed to parse prd.json:', e);
 			return null;
 		}

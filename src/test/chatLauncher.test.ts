@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
-import { sendToChat } from '../chatLauncher';
+import { sendToChat, sendToChatWithOutcome } from '../chatLauncher';
 
 describe('chatLauncher', () => {
 	describe('sendToChat', () => {
@@ -73,19 +73,25 @@ describe('chatLauncher', () => {
 			assert.ok(commandsCalled.includes('workbench.action.chat.open'), 'should call chat.open');
 		});
 
-		it('returns false when chat.open exceeds the timeout', async () => {
+		it('keeps an uncertain chat timeout out of the clipboard and reports it as unknown', async () => {
 			const origExec = vscode.commands.executeCommand;
 			const origWrite = vscode.env.clipboard.writeText;
+			const origWarn = vscode.window.showWarningMessage;
+			let clipboardWrites = 0;
 			(vscode.commands as any).executeCommand = async () => new Promise(() => undefined);
-			(vscode.env.clipboard as any).writeText = async () => undefined;
+			(vscode.env.clipboard as any).writeText = async () => { clipboardWrites++; };
+			(vscode.window as any).showWarningMessage = async () => undefined;
 			try {
 				const started = Date.now();
-				const result = await sendToChat('Timeout test', { timeoutMs: 10 });
-				assert.strictEqual(result, false);
+				const outcome = await sendToChatWithOutcome('Timeout test', { timeoutMs: 10 });
+				assert.strictEqual(outcome, 'unknown');
+				assert.strictEqual(clipboardWrites, 0);
+				assert.strictEqual(await sendToChat('Timeout test', { timeoutMs: 10 }), false);
 				assert.ok(Date.now() - started < 500);
 			} finally {
 				(vscode.commands as any).executeCommand = origExec;
 				(vscode.env.clipboard as any).writeText = origWrite;
+				(vscode.window as any).showWarningMessage = origWarn;
 			}
 		});
 

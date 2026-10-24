@@ -6,16 +6,14 @@
  */
 
 import { Issue } from './prdManager';
-import { safeTaskId } from './stateManager';
+import { safeTaskId, TaskIdentityError } from './stateManager';
 
 /**
  * Validate a task ID coming from the webview. Returns null if invalid.
  * The raw value must survive the round-trip through safeTaskId unchanged.
  */
 export function safeMessageId(raw: unknown): string | null {
-	if (typeof raw !== 'string') { return null; }
-	const id = safeTaskId(raw);
-	return id === raw.trim() && id !== 'UNKNOWN' ? id : null;
+	try { return safeTaskId(raw); } catch { return null; }
 }
 
 /** Type guard: is the value a valid board status? */
@@ -45,6 +43,9 @@ export function cleanPriority(raw: unknown): Issue['priority'] {
 
 /** Sanitize all editable fields of an issue coming from the webview modal. */
 export function cleanIssueFields(raw: any): Partial<Issue> {
+	if (raw?.dependencies !== undefined && !Array.isArray(raw.dependencies)) {
+		throw new TaskIdentityError('ID de dependencia inválido: dependencies debe ser un array.');
+	}
 	return {
 		title:              cleanText(raw?.title, 240),
 		description:        cleanText(raw?.description, 4000),
@@ -52,7 +53,7 @@ export function cleanIssueFields(raw: any): Partial<Issue> {
 		priority:           cleanPriority(raw?.priority),
 		acceptanceCriteria: cleanTextArray(raw?.acceptanceCriteria),
 		labels:             cleanTextArray(raw?.labels).map(l => l.slice(0, 80)),
-		dependencies:       cleanTextArray(raw?.dependencies).map(safeTaskId),
+		dependencies:       (Array.isArray(raw?.dependencies) ? raw.dependencies : []).map(safeTaskId),
 	};
 }
 

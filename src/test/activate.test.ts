@@ -296,7 +296,7 @@ describe('activation command guards', () => {
 			await capture.handlers.get('ralph-suite.syncIssue')?.(43, 'blocked');
 			assert.strictEqual(fs.readFileSync(statusPath, 'utf8'), 'blocked');
 			await capture.handlers.get('ralph-suite.syncIssue')?.(43, 'todo');
-			assert.strictEqual(fs.existsSync(statusPath), false);
+			assert.strictEqual(fs.readFileSync(statusPath, 'utf8'), 'todo');
 			assert.strictEqual(RalphStateManager.getStatus(root, 'ISSUE-TRANSITIONS'), 'todo');
 		} finally {
 			capture.restore();
