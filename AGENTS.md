@@ -48,6 +48,13 @@ Checkpoints always take priority over the completion protocol. If a completion s
 - Ad hoc requests, analysis, review, documentation, and handoff work do not require an ID and must not write `.ralph/` signals.
 - If a Ralph execution lacks its explicit task ID or workspace root, ask for that context before running it.
 
+## Pre-implementation continuity
+- Before substantial implementation, reconcile the request with current tracking sources and the configured backlog (read-only).
+- If a required card is missing, request an explicitly authorized maintainer UI operation; never invent an agent API or edit `prd.json`.
+- Report work without board tracking explicitly and block only implementation dependent on the missing connection; independent authorized ad hoc work needs no invented Ralph ID.
+- Forward the Ralph prompt contract unchanged through handoffs; executors return evidence and only the parent's `closureOwner` writes completion signals after all scope and gates pass.
+- Chat `task_complete`, review, rejection and partial handoffs neither update the board nor authorize runtime completion.
+
 ## Completion protocol
 For a Ralph execution with the required context, and only after the full task scope and quality gates are complete:
 1. Overwrite (not append) `.ralph/task-<ID>-status` with the single word: `completed`. The file must contain ONLY that word — no extra lines, no other content. Remove the previous status value before writing the new one.

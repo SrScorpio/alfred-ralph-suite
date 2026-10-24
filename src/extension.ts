@@ -19,18 +19,25 @@ export function activate(context: vscode.ExtensionContext) {
 			extensionPath: context.extensionPath,
 			version: getExtensionVersion(),
 		}).then((result) => {
+			for (const file of result.conflicts) output.appendLine(`[Alfred Ralph] personalizado preservado: ${file}`);
+			for (const warning of result.warnings) output.appendLine(`[Alfred Ralph] aviso de catálogo: ${warning}`);
+			if (result.conflicts.length || result.warnings.length) {
+				output.show(true);
+				void vscode.window.showWarningMessage('Alfred Ralph Suite preservó personalizaciones o encontró recursos pendientes. Consulta Output: Ralph Suite.');
+			}
 			if (!result.changed) return;
-			output.appendLine(`[Alfred Ralph] ${result.agents} agentes copiados al perfil`);
+			output.appendLine(`[Alfred Ralph] actualizados: ${result.agents} agentes, ${result.skills} skills, ${result.instructions} instrucciones, ${result.templates} plantillas`);
 			void vscode.window.showInformationMessage(
-				`Alfred Ralph Suite instaló ${result.agents} agentes. Recarga la ventana para verlos en el selector del chat.`,
+				'Alfred Ralph Suite actualizó recursos del catálogo. Recarga la ventana para cargar los cambios; los conflictos pendientes se detallan en Output.',
 				'Recargar ventana',
 			).then((choice) => {
 				if (choice === 'Recargar ventana') {
 					void vscode.commands.executeCommand('workbench.action.reloadWindow');
 				}
 			});
-		}).catch((error: unknown) => {
-			output.appendLine(`[Alfred Ralph] no se pudo instalar el catálogo: ${error}`);
+		}).catch(() => {
+			output.appendLine('[Alfred Ralph] no se pudo reconciliar el catálogo; no se confirma su instalación completa.');
+			output.show(true);
 		});
 	} catch (e) {
 		output.appendLine(`[Ralph] ===== ACTIVATION FAILED: ${e} =====`);

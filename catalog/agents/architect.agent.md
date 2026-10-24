@@ -3,7 +3,6 @@ description: Arquitecto del equipo Alfred Dev (El Dibujante de Cajas). Diseño d
 tools: ['search', 'edit', 'web', 'execute']
 # Para añadir Claude u otro proveedor, pega su nombre exacto del picker al final.
 # No actives fallbacks no instalados: el vendor y la versión dependen del bridge.
-model: ['Grok 4.7 (xai-grok)', 'GLM 5.3 (glm)', 'glm5.3 (nan)', 'GLM 5.3 Flash (glm)', 'glm5.3-flash (nan)']
 handoffs:
   - label: Implementar diseño
     agent: junior-dev

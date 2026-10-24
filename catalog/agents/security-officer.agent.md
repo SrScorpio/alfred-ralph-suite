@@ -3,7 +3,6 @@ description: CSO del equipo Alfred Dev (El Paranoico). Auditoría de seguridad, 
 tools: ['search', 'edit', 'execute', 'web']
 # Para añadir Claude u otro proveedor, pega su nombre exacto del picker al final.
 # No actives fallbacks no instalados: el vendor y la versión dependen del bridge.
-model: ['Grok 4.7 (xai-grok)', 'GLM 5.3 (glm)', 'glm5.3 (nan)', 'GLM 5.3 Flash (glm)', 'glm5.3-flash (nan)']
 handoffs:
   - label: Informar veredicto a Alfred
     agent: alfred
