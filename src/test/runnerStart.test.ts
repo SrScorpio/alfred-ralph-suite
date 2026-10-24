@@ -1,3 +1,4 @@
+import { markTaskRunSending, markTaskRunSent, releaseTaskRunReservation, reserveTaskRun } from '../taskRunReservation';
 import * as assert from 'assert';
 import * as fs from 'fs';
 import * as os from 'os';
@@ -104,6 +105,36 @@ describe('ISSUE-004 runner start and existing AGENTS.md', () => {
 			}
 		});
 	}
+
+
+	it('does not dispatch while a reservation is sending or sent', async () => {
+		const root = path.resolve('runner-reserved-task');
+		const panel = Object.create(KanbanPanel.prototype) as any;
+		panel.root = root;
+		panel.folders = [{ index: 0, root }];
+		panel.autoRun = true;
+		panel.loopCount = 0;
+		let scheduled = 0;
+		let launched = 0;
+		panel.scheduleNextTask = () => { scheduled++; };
+		const executeCommand = vscode.commands.executeCommand;
+		(vscode.commands as any).executeCommand = async () => { launched++; };
+		const reservation = reserveTaskRun(root, 'ISSUE-001');
+		assert.ok(reservation);
+		try {
+			for (const mark of [markTaskRunSending, markTaskRunSent]) {
+				assert.strictEqual(mark(reservation!), true);
+				scheduled = 0;
+				await panel.runNextTask();
+				assert.strictEqual(scheduled, 1);
+				assert.strictEqual(launched, 0);
+				assert.strictEqual(panel.loopCount, 0);
+			}
+		} finally {
+			releaseTaskRunReservation(reservation!);
+			(vscode.commands as any).executeCommand = executeCommand;
+		}
+	});
 
 	it('does not generate anything when AGENTS.md already exists and the choice is dismissed', async () => {
 		const root = fs.mkdtempSync(path.join(os.tmpdir(), 'ralph-agents-'));

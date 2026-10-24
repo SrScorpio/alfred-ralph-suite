@@ -2,13 +2,14 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import { DEFAULT_PRD_PATH, PrdManager, Issue, Prd, prdWatchPattern } from './prdManager';
-import { RalphStateManager, TaskLog, safeTaskId } from './stateManager';
+import { RalphStateManager, TaskLog, safeTaskId, TaskIdentityError } from './stateManager';
 import { getShellHtml, getBoardContent, BoardConfig } from './webview/kanbanHtml';
 import { buildPushPrompt, buildSyncPrompt } from './kanban/gitHubSync';
 import { buildContextRefreshPrompt } from './kanban/contextRefresh';
 import { importPlanToPrd, buildAddFromChatPrompt, persistNewBacklogItem, applyEditedBacklogId, appendImportedIssues } from './kanban/planImport';
 import { sendToChat } from './chatLauncher';
-import { pendingTasksMessage, runnerStopMessage, RunnerStopReason } from './commands/task';
+import { confirmTaskRunRecovery, pendingTasksMessage, runnerStopMessage, RunnerStopReason } from './commands/task';
+import { getTaskRunReservation } from './taskRunReservation';
 import { safeMessageId, isBoardStatus, cleanText, cleanTextArray, cleanPriority, cleanIssueFields, getNonce } from './boardSanitizers';
 import { computeHealthScore } from './healthScore';
 import { detectLocale } from './i18n';
@@ -79,7 +80,7 @@ export class KanbanPanel {
 			watch(folder.root, '.ralph/task-*-status', () => {
 				KanbanPanel.output?.appendLine('[Ralph] Status changed — refreshing');
 				this.render();
-				if (this.autoRun) {
+				if (this.autoRun && getTaskRunReservation()?.phase !== 'recovery') {
 					this.checkAutoOptimize().then(() => { this.scheduleNextTask(3000); });
 				}
 			});
@@ -202,6 +203,7 @@ export class KanbanPanel {
 				KanbanPanel.current = undefined;
 			} else {
 				KanbanPanel.output?.appendLine(`[Ralph] Render error: ${e?.message}`);
+				if (e instanceof TaskIdentityError) { void vscode.window.showErrorMessage(`Ralph: ${e.message}`); }
 			}
 		}
 	}
@@ -380,6 +382,18 @@ export class KanbanPanel {
 
 	private async runNextTask() {
 		if (!this.autoRun) { return; }
+		const reservation = getTaskRunReservation();
+		let recoveredReservation: ReturnType<typeof getTaskRunReservation>;
+		if (reservation?.phase === 'recovery') {
+			if (!await confirmTaskRunRecovery() || getTaskRunReservation()) {
+				this.haltRunner('in-progress');
+				return;
+			}
+			recoveredReservation = reservation;
+		} else if (reservation) {
+			this.scheduleNextTask(3000);
+			return;
+		}
 		const maxLoops = vscode.workspace.getConfiguration('ralph-suite').get<number>('maxLoops', 5);
 		if (this.loopCount >= maxLoops) {
 			vscode.window.showInformationMessage(`Ralph runner paused after ${maxLoops} tasks. Click ⚡ to resume.`);
@@ -393,9 +407,22 @@ export class KanbanPanel {
 		const prd = this.aggregatedPrd();
 		if (!prd) { this.haltRunner('no-prd'); return; }
 		let eligiblePrd = prd;
+		if (recoveredReservation) {
+			eligiblePrd = {
+				...prd,
+				issues: prd.issues.map(issue => {
+					const root = this.folders.find(folder => folder.index === issue.folderIndex)?.root ?? this.root;
+					return issue.id === recoveredReservation?.taskId && path.resolve(root) === path.resolve(recoveredReservation.root)
+						? { ...issue, status: 'todo' }
+						: issue;
+				}),
+			};
+		}
 
 		const inProgress = prd.issues.find(issue => {
 			const root = this.folders.find(folder => folder.index === issue.folderIndex)?.root ?? this.root;
+			if (recoveredReservation && issue.id === recoveredReservation.taskId
+				&& path.resolve(root) === path.resolve(recoveredReservation.root)) { return false; }
 			return issue.status === 'inprogress' || RalphStateManager.getStatus(root, issue.id) === 'inprogress';
 		});
 		if (inProgress) {
@@ -496,7 +523,7 @@ export class KanbanPanel {
 					const titleIP = prdIP?.issues.find(i => i.id === id)?.title ?? '';
 					RalphStateManager.setInProgress(folder?.root ?? this.root, id, titleIP);
 				} else if (status === 'todo') {
-					RalphStateManager.reset(this.folderFromMessage(msg)?.root ?? this.root, id);
+					RalphStateManager.setTodoOverride(this.folderFromMessage(msg)?.root ?? this.root, id);
 				}
 				this.render();
 				break;

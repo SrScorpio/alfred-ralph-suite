@@ -10,7 +10,7 @@
 	"config.guardrails.description": "Rules written into each task prompt. Not applied in Alfred mode: the agent files win.",
 	"config.boundaries.description": "Paths the agent must not modify (for example legacy/** or *.lock). Not applied in Alfred mode.",
 	"config.taskTimeoutMs.description": "Milliseconds to wait for the task completion signal. It does not close the chat. Default 600000 (10 minutes).",
-	"config.taskRetries.description": "Retries when the completion signal does not arrive in time. Each retry opens the chat again. Default 1.",
+	"config.taskRetries.description": "Deprecated for safety: the setting remains available, but Ralph will not automatically relaunch tasks that may have been sent to chat. Default 1.",
 	"config.minWaitMs.description": "Minimum time in milliseconds to wait before starting to poll for task completion. Default: 15000 (15 seconds).",
 	"config.pollIntervalMs.description": "How often in milliseconds to check whether the agent has completed a task. Default: 5000 (5 seconds).",
 	"config.agentRole.description": "Only when alfredMode is off. In Alfred mode, the default, Alfred starts the project and this setting is unused. Role written into AGENTS.md when Ralph generates the project package.",

@@ -10,7 +10,8 @@ import { RalphStateManager } from './stateManager';
 import { DEFAULT_PRD_PATH, PrdManager, prdWatchPattern } from './prdManager';
 import { showMenu } from './commands/menu';
 import { initProject, setupProject } from './commands/project';
-import { getTaskRunBlockReason, pendingTasksMessage, runTaskWithRetry } from './commands/task';
+import { confirmTaskRunRecovery, getTaskRunBlockReason, pendingTasksMessage, runTaskWithRetry } from './commands/task';
+import { getTaskRunReservation, withTaskRunReservation } from './taskRunReservation';
 import { optimizeMemory, migrateMemories } from './commands/memory';
 import { selectTaskPrompt } from './promptBuilders';
 import { resolveWorkspaceRoot } from './workspaceRoot';
@@ -194,6 +195,10 @@ export function _doActivate(context: vscode.ExtensionContext, output: vscode.Out
 				vscode.window.showInformationMessage(pendingTasksMessage(prd.issues, 'No hay tareas pendientes.'));
 				return;
 			}
+			const pendingReservation = getTaskRunReservation();
+			if (pendingReservation?.phase === 'recovery') {
+				if (!await confirmTaskRunRecovery()) { return; }
+			}
 			const runtimeStatuses = RalphStateManager.getAllStatuses(root);
 			const prdStatuses = Object.fromEntries(prd.issues.map(issue => [issue.id, issue.status]));
 			if (taskId && runtimeStatuses[task.id] === 'todo') { task.status = 'todo'; }
@@ -201,19 +206,24 @@ export function _doActivate(context: vscode.ExtensionContext, output: vscode.Out
 				const reason = getTaskRunBlockReason(task, runtimeStatuses, prdStatuses);
 				if (reason) { vscode.window.showErrorMessage(`Ralph: ${reason}`); return; }
 			}
-			const cfg          = vscode.workspace.getConfiguration('ralph-suite');
-			const identity     = await currentAlfredIdentity(output);
-			const ralphContext = {
-				kind: 'ralph-execution' as const,
-				localTaskId: task.id,
-				workspaceRoot: root,
-			};
-			const prompt       = selectTaskPrompt(task, prd, ralphContext, identity);
-			const freshContext = cfg.get<boolean>('freshContext', true);
-			const minWaitMs    = cfg.get<number>('minWaitMs', 15000);
-			const timeoutMs    = cfg.get<number>('taskTimeoutMs', 600000);
-			const retries      = cfg.get<number>('taskRetries', 1);
-			await runTaskWithRetry(task, prompt, root, freshContext, minWaitMs, timeoutMs, retries, output, KanbanPanel.runnerSignal(), identity?.actions.runTask.agent);
+			if (getTaskRunReservation()?.phase === 'recovery' && !await confirmTaskRunRecovery()) { return; }
+			// The helper reserves synchronously before calling this async action or awaiting identity.
+			const acquired = await withTaskRunReservation(root, task.id, async reservation => {
+				const cfg = vscode.workspace.getConfiguration('ralph-suite');
+				const identity = await currentAlfredIdentity(output);
+				const ralphContext = {
+					kind: 'ralph-execution' as const,
+					localTaskId: task.id,
+					workspaceRoot: root,
+				};
+				const prompt = selectTaskPrompt(task, prd, ralphContext, identity);
+				const freshContext = cfg.get<boolean>('freshContext', true);
+				const minWaitMs = cfg.get<number>('minWaitMs', 15000);
+				const timeoutMs = cfg.get<number>('taskTimeoutMs', 600000);
+				const retries = cfg.get<number>('taskRetries', 1);
+				await runTaskWithRetry(task, prompt, root, freshContext, minWaitMs, timeoutMs, retries, output, KanbanPanel.runnerSignal(), identity?.actions.runTask.agent, reservation);
+			});
+			if (!acquired) { vscode.window.showWarningMessage('Ralph: ya hay una ejecución reservada en esta instancia.'); }
 		}),
 
 		vscode.commands.registerCommand('ralph-suite.showHostChatDefaults', () => showHostChatDefaults()),
@@ -268,7 +278,7 @@ export function _doActivate(context: vscode.ExtensionContext, output: vscode.Out
 		}),
 
 		vscode.commands.registerCommand('ralph-suite.resetTask', async (taskId: string) => {
-			if (!requireWorkspaceTrust('reiniciar una tarea')) { return; }
+			if (!requireWorkspaceTrust('restaurar el estado del backlog de una tarea')) { return; }
 			const root = getWorkspaceRoot();
 			if (!root) { return; }
 			RalphStateManager.reset(root, taskId);

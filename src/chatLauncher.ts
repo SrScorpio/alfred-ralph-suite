@@ -44,7 +44,10 @@ interface ChatOptions {
  *
  * @returns `true` if the chat command succeeded, `false` if it fell back.
  */
-export async function sendToChat(prompt: string, options: ChatOptions = {}): Promise<boolean> {
+export type ChatSendOutcome = 'sent' | 'not-sent' | 'unknown';
+
+/** Structured outcome for runners that must distinguish a safe retry from an ambiguous dispatch. */
+export async function sendToChatWithOutcome(prompt: string, options: ChatOptions = {}): Promise<ChatSendOutcome> {
 	const {
 		freshContext = false,
 		delayMs = 400,
@@ -56,6 +59,7 @@ export async function sendToChat(prompt: string, options: ChatOptions = {}): Pro
 	const agentName = typeof agent === 'string' && /^[a-z0-9-]{1,40}$/.test(agent) ? agent : undefined;
 	const addressed = agentName && !prompt.startsWith(`@${agentName}`) ? `@${agentName}\n${prompt}` : prompt;
 	let abortListener: (() => void) | undefined;
+	let openStarted = false;
 
 	try {
 		if (signal?.aborted) { throw new Error('Chat command aborted'); }
@@ -65,6 +69,7 @@ export async function sendToChat(prompt: string, options: ChatOptions = {}): Pro
 				await sleep(delayMs);
 			}
 			if (signal?.aborted) { throw new Error('Chat command aborted'); }
+			openStarted = true;
 			await vscode.commands.executeCommand('workbench.action.chat.open', {
 				query: addressed,
 				isPartialQuery: false,
@@ -84,15 +89,26 @@ export async function sendToChat(prompt: string, options: ChatOptions = {}): Pro
 			: new Promise<never>(() => undefined);
 		await Promise.race([send, timeout, aborted]);
 		// Promise.race cannot cancel VS Code's command. A late completion is
-		// intentionally ignored because state changes happen only after true.
-		return true;
-	} catch {
+		// intentionally ignored; its dispatch outcome remains unknown to callers.
+		return 'sent';
+	} catch (error) {
+		const uncertainWait = error instanceof Error
+			&& (error.message === 'Chat command timed out' || error.message === 'Chat command aborted');
+		if (openStarted && uncertainWait) {
+			vscode.window.showWarningMessage('Ralph: el env?o al chat qued? sin confirmar. No se ha copiado el prompt.');
+			return 'unknown';
+		}
 		await vscode.env.clipboard.writeText(addressed);
 		vscode.window.showInformationMessage(fallbackMessage);
-		return false;
+		return 'not-sent';
 	} finally {
 		if (signal && abortListener) {
 			signal.removeEventListener('abort', abortListener);
 		}
 	}
+}
+
+/** Backwards-compatible ad hoc API: true only when the host accepted the send. */
+export async function sendToChat(prompt: string, options: ChatOptions = {}): Promise<boolean> {
+	return (await sendToChatWithOutcome(prompt, options)) === 'sent';
 }

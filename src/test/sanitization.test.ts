@@ -48,22 +48,19 @@ describe('PRD normalization', () => {
 		fs.rmSync(tmpDir, { recursive: true, force: true });
 	});
 
-	it('normalizes invalid IDs, duplicate IDs and non-array fields', () => {
+	it('normalizes descriptive fields without changing valid IDs or dependencies', () => {
 		fs.writeFileSync(path.join(tmpDir, 'prd.json'), JSON.stringify({
 			project: 42,
-			issues: [
-				{ id: '../bad id', title: 7, labels: 'x', dependencies: ['DEP 1'] },
-				{ id: '../bad id', title: 'Second' },
-			],
+			issues: [{ id: 'LOCAL-1', title: 7, labels: 'x', dependencies: ['DEP-1'] }],
 		}), 'utf-8');
 
 		const prd = PrdManager.load(tmpDir);
 		assert.ok(prd);
 		assert.strictEqual(prd!.project, '42');
-		assert.strictEqual(prd!.issues[0].id, safeTaskId('../bad id'));
-		assert.notStrictEqual(prd!.issues[0].id, prd!.issues[1].id);
+		assert.strictEqual(prd!.issues[0].id, safeTaskId('LOCAL-1'));
+		assert.strictEqual(prd!.issues[0].title, '7');
 		assert.deepStrictEqual(prd!.issues[0].labels, []);
-		assert.deepStrictEqual(prd!.issues[0].dependencies, ['DEP_1']);
+		assert.deepStrictEqual(prd!.issues[0].dependencies, ['DEP-1']);
 	});
 
 	it('mutates and saves PRD through the central raw API', () => {

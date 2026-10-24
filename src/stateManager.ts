@@ -6,12 +6,13 @@ const RALPH_DIR = '.ralph';
 const AGENT_DIR = '.agent';
 
 export function safeTaskId(id: unknown): string {
-	const safe = String(id ?? '')
-		.trim()
-		.replace(/[^A-Za-z0-9_.-]/g, '_')
-		.slice(0, 80);
-	return safe || 'UNKNOWN';
+	if (typeof id !== 'string' || !/^[A-Za-z0-9_.-]{1,80}$/.test(id)) {
+		throw new TaskIdentityError(`ID Ralph inválido: ${JSON.stringify(id)}. Se requieren 1–80 caracteres ASCII: letras, números, punto, guion o guion bajo; no se transforma el ID.`);
+	}
+	return id;
 }
+
+export class TaskIdentityError extends Error {}
 
 type MemoryKind = 'Project' | 'Conventions' | 'Decisions' | 'Known Issues';
 
@@ -147,6 +148,7 @@ export class RalphStateManager {
 	}
 
 	static setStatus(root: string, id: string, status: 'inprogress' | 'blocked', title?: string) {
+		safeTaskId(id);
 		if (status === 'inprogress') {
 			this.setInProgress(root, id, title);
 			return;
@@ -156,6 +158,7 @@ export class RalphStateManager {
 	}
 
 	static setInProgress(root: string, id: string, title?: string) {
+		safeTaskId(id);
 		this.backupStatusBeforeOverwrite(root, id, 'inprogress');
 		this.ensure(root);
 		fs.writeFileSync(this.statusPath(root, id), 'inprogress', 'utf-8');
@@ -176,6 +179,7 @@ export class RalphStateManager {
 	}
 
 	static setCompleted(root: string, id: string, summary?: string, filesChanged?: string[], configuredMemoriesPath?: string) {
+		safeTaskId(id);
 		this.ensure(root);
 		fs.writeFileSync(this.statusPath(root, id), 'completed', 'utf-8');
 
@@ -200,6 +204,7 @@ export class RalphStateManager {
 	}
 
 	static setFailed(root: string, id: string, reason?: string) {
+		safeTaskId(id);
 		this.ensure(root);
 		fs.writeFileSync(this.statusPath(root, id), 'failed', 'utf-8');
 		const logFile = this.logPath(root, id);
@@ -222,6 +227,7 @@ export class RalphStateManager {
 	}
 
 	static setTodoOverride(root: string, id: string): void {
+		safeTaskId(id);
 		this.backupStatusBeforeOverwrite(root, id, 'todo');
 		this.ensure(root);
 		fs.writeFileSync(this.statusPath(root, id), 'todo', 'utf-8');
@@ -235,10 +241,6 @@ export class RalphStateManager {
 			.split(/\r?\n/)
 			.map(l => l.trim())
 			.filter(Boolean)[0] ?? '';
-		// Also sanitize the file if it has multiple lines — keep only first line
-		if (fs.readFileSync(p, 'utf-8').includes('\n')) {
-			fs.writeFileSync(p, v, 'utf-8');
-		}
 		if (v === 'inprogress') { return 'inprogress'; }
 		if (v === 'completed')  { return 'completed'; }
 		if (v === 'blocked')    { return 'blocked'; }
@@ -247,12 +249,16 @@ export class RalphStateManager {
 	}
 
 	static getAllStatuses(root: string): Record<string, 'todo' | 'inprogress' | 'completed' | 'blocked' | 'failed'> {
-		const result: Record<string, 'todo' | 'inprogress' | 'completed' | 'blocked' | 'failed'> = {};
+		const result: Record<string, 'todo' | 'inprogress' | 'completed' | 'blocked' | 'failed'> = Object.create(null);
 		const d = this.ralphDir(root);
 		if (!fs.existsSync(d)) { return result; }
 		for (const f of fs.readdirSync(d)) {
 			const m = f.match(/^task-(.+)-status$/);
 			if (!m) { continue; }
+			try { safeTaskId(m[1]); } catch (error) {
+				console.warn('[Ralph] Ignoring invalid runtime filename:', f, error);
+				continue;
+			}
 			result[m[1]] = this.getStatus(root, m[1]);
 		}
 		return result;
