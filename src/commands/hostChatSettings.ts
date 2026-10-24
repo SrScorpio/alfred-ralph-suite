@@ -9,11 +9,14 @@ async function openOfficialSettings(): Promise<void> {
 	try {
 		await vscode.commands.executeCommand('workbench.action.openSettings', combinedFilter);
 	} catch {
+		let opened = false;
 		for (const key of HOST_CHAT_SETTING_KEYS) {
 			try {
 				await vscode.commands.executeCommand('workbench.action.openSettings', `@id:${key}`);
-			} catch { /* El host puede no implementar la navegación en una versión concreta. */ }
+				opened = true;
+			} catch { /* Se prueban las demás claves antes de informar del fallo total. */ }
 		}
+		if (!opened) throw new Error('All five settings navigation attempts failed.');
 	}
 }
 
@@ -23,7 +26,9 @@ export async function showHostChatDefaults(): Promise<void> {
 		while (true) {
 			const snapshot = readHostChatDefaults();
 			const items: (vscode.QuickPickItem & { action?: 'refresh' | 'settings' })[] = [
-				...snapshot.settings.map(({ key, value }) => ({ label: key, description: value })),
+				...snapshot.settings.map(({ key, value, support }) => ({
+					label: key, description: support === 'unknown' ? `${value} (soporte no verificado)` : value,
+				})),
 				{ label: 'Confianza del workspace completo', description: snapshot.hasWorkspaceFolders ? (snapshot.workspaceTrusted ? 'de confianza' : 'no es de confianza') : 'sin carpetas abiertas' },
 				{ label: 'Versión de VS Code', description: snapshot.vscodeVersion },
 				{ label: 'Policy: no determinable' },
@@ -33,7 +38,7 @@ export async function showHostChatDefaults(): Promise<void> {
 			];
 			const selected = await vscode.window.showQuickPick(items, { title: 'Configuración actual del chat de VS Code', ignoreFocusOut: true });
 			if (selected?.action === 'refresh') continue;
-			if (selected?.action === 'settings') await openOfficialSettings();
+			if (selected?.action === 'settings') await openHostChatSettings();
 			return;
 		}
 	} catch {

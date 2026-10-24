@@ -27,6 +27,7 @@ export function normalizeHostChatValue(value: unknown, expectedType: ExpectedTyp
 export interface HostChatSettingSnapshot {
 	key: (typeof HOST_CHAT_SETTING_KEYS)[number];
 	value: string;
+	support: 'unknown' | 'unavailable';
 }
 
 export interface HostChatDefaultsSnapshot {
@@ -38,15 +39,17 @@ export interface HostChatDefaultsSnapshot {
 
 export function readHostChatDefaults(): HostChatDefaultsSnapshot {
 	const config = vscode.workspace.getConfiguration();
-	const settings = HOST_CHAT_SETTING_KEYS.map((key) => {
+	const settings = HOST_CHAT_SETTING_KEYS.map((key): HostChatSettingSnapshot => {
 		const inspected = config.inspect<unknown>(key);
-		if (!inspected) return { key, value: 'no disponible' };
+		if (!inspected) return { key, value: 'no disponible', support: 'unavailable' };
+		// inspect() also returns manually configured keys without certifying host schema support.
+		const support = 'unknown';
 		const resolved = config.get<unknown>(key);
 		const explicit = inspected.globalValue !== undefined || inspected.workspaceValue !== undefined ||
 			inspected.workspaceFolderValue !== undefined || inspected.globalLanguageValue !== undefined ||
 			inspected.workspaceLanguageValue !== undefined || inspected.workspaceFolderLanguageValue !== undefined;
-		if (!explicit) return { key, value: 'sin configurar' };
-		return { key, value: normalizeHostChatValue(resolved, EXPECTED_TYPES[key]) ?? 'sin configurar' };
+		if (!explicit) return { key, value: 'sin configurar', support };
+		return { key, value: normalizeHostChatValue(resolved, EXPECTED_TYPES[key]) ?? 'sin configurar', support };
 	});
 	return {
 		settings,
