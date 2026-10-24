@@ -25,6 +25,7 @@ import { resolveAlfredMode, AlfredIdentity } from './alfredIdentity';
 import { buildAlfredAnalyzePrompt, buildAlfredSyncLedger } from './alfredPrompt';
 import { ALFRED_CONTINUITY, ALFRED_FLOWS, withDescriptions } from './commands/alfredPalette';
 import { installSecretHook } from './security/secretHook';
+import { openHostChatSettings, showHostChatDefaults } from './commands/hostChatSettings';
 
 
 export function _doActivate(context: vscode.ExtensionContext, output: vscode.OutputChannel) {
@@ -224,6 +225,9 @@ export function _doActivate(context: vscode.ExtensionContext, output: vscode.Out
 			});
 			if (!acquired) { vscode.window.showWarningMessage('Ralph: ya hay una ejecución reservada en esta instancia.'); }
 		}),
+
+		vscode.commands.registerCommand('ralph-suite.showHostChatDefaults', () => showHostChatDefaults()),
+		vscode.commands.registerCommand('ralph-suite.openHostChatSettings', () => openHostChatSettings()),
 
 		vscode.commands.registerCommand('ralph-suite.syncIssue', (githubIssueNumber: unknown, status: unknown, workspaceRoot?: string) => {
 			if (!requireWorkspaceTrust('sincronizar una issue')) { return; }
