@@ -4,7 +4,6 @@ tools: ['search', 'edit', 'github/*', 'execute', 'agent']
 agents: ['security-officer']
 # Para añadir Claude u otro proveedor, pega su nombre exacto del picker al final.
 # No actives fallbacks no instalados: el vendor y la versión dependen del bridge.
-model: ['GPT 6.1 Sol (openai-codex)', 'GPT-6.1 Sol (copilot)', 'Grok 4.7 (xai-grok)', 'GLM 5.3 (glm)', 'glm5.3 (nan)']
 handoffs:
   - label: Revisión de calidad
     agent: qa-engineer

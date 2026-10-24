@@ -8,6 +8,24 @@ All notable changes to Ralph Suite are documented here.
 
 - Nada pendiente.
 
+## [1.12.7] - 2026-10-24
+
+### Fixed
+- Continuidad de workflow: la identidad integrada de runTask se enruta a Alfred sin alterar el resto de roles, el handoff de Ralph viaja inmutable con alcance, gates y cierre propiedad del padre, y Ralph no recibe autoridad de completado sin contexto explicito, coincidente y conocido.
+- Reconciliacion honesta del tablero y delegacion que preserva roles; los doce modelos del catalogo quedan a eleccion del host sin cambiar las declaraciones de rol.
+- Instrucciones globales neutrales: alcance limitado a Alfred/Ralph, adopta practicas de trabajo sin imponer persona ni framework de terceros.
+
+### Added
+- Instalador seguro de catalogo: hashes por recurso, publicacion atomica con staging, lock interproceso, preservacion de personalizaciones del usuario y guard contra downgrades de contenido gestionado.
+- Test de version por activacion: la activacion anuncia la version real de package.json en el canal de salida.
+
+### Tests
+- Suite: 412 passing en el arbol fuente.
+
+### Limitaciones
+- La validacion interactiva de la extension instalada y del runner sigue pendiente; las pruebas automatizadas no la sustituyen.
+- El alcance de PR#34 (guia de tests) queda separado y abierto; no se incluye en esta version.
+
 ## [1.12.6] - 2026-10-24
 
 ### Fixed

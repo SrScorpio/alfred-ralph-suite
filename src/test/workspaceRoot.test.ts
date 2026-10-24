@@ -6,9 +6,23 @@ import { PrdManager } from '../prdManager';
 import { resolveWorkspaceRoot } from '../workspaceRoot';
 
 describe('workspace root for Alfred / multi-root', () => {
-	it('ships package.json as version 1.12.6', () => {
+	it('announces the current package.json version during activation', async () => {
 		const packageJson = JSON.parse(fs.readFileSync(path.join(__dirname, '../../package.json'), 'utf8'));
-		assert.strictEqual(packageJson.version, '1.12.6');
+		const vscode = require('vscode');
+		const activation = require('../activate');
+		const installer = require('../catalogInstaller');
+		const lines: string[] = [];
+		const saved = [activation._doActivate, installer.installUserCatalog, vscode.window.createOutputChannel];
+		try {
+			activation._doActivate = () => undefined;
+			installer.installUserCatalog = async () => ({ changed: false, conflicts: [], warnings: [] });
+			vscode.window.createOutputChannel = () => ({ appendLine: (line: string) => lines.push(line) });
+			require('../extension').activate({ extensionPath: path.join(__dirname, '../..'), subscriptions: [] });
+			await new Promise(resolve => setImmediate(resolve));
+			assert.ok(lines.includes('[Ralph] ===== ACTIVATING v' + packageJson.version + ' ====='));
+		} finally {
+			[activation._doActivate, installer.installUserCatalog, vscode.window.createOutputChannel] = saved;
+		}
 	});
 
 	it('announces the public command contract used by Alfred Dev', () => {

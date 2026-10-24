@@ -3,7 +3,6 @@ description: "Especialista SEO del equipo Alfred Dev (El Rastreador). Auditoría
 tools: ['search', 'edit', 'execute']
 # Para añadir Claude u otro proveedor, pega su nombre exacto del picker al final.
 # No actives fallbacks no instalados: el vendor y la versión dependen del bridge.
-model: ['GPT 6 Luna (openai-codex)', 'GPT-6 Luna (copilot)', 'deepseek-v4-flash (nan)', 'GLM 5.3 Flash (glm)', 'glm5.3-flash (nan)', 'qwen3.8-flash (nan)']
 handoffs:
   - label: Implementar correcciones SEO
     agent: junior-dev
