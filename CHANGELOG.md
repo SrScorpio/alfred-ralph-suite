@@ -8,6 +8,17 @@ All notable changes to Ralph Suite are documented here.
 
 - Nada pendiente.
 
+## [1.12.6] - 2026-10-24
+
+### Fixed
+- Auditoría de integridad (SrScorpio/alfred-ralph-suite#38; cierra SrScorpio/alfred-ralph-suite#35, SrScorpio/alfred-ralph-suite#36 y SrScorpio/alfred-ralph-suite#37): reserva síncrona de ejecución Ralph en el host, recuperación explícita tras dispatch ambiguo y avance seguro sin redispatch automático.
+- Conservación de IDs locales literales, rechazo de identidades inválidas o duplicadas y sincronización GitHub→Ralph solo mediante labels explícitos.
+- Composición de hooks Secret Guard compatibles sin ocultar fallos, rechazo de hooks dependientes de identidad, conservación de overrides de tareas y lecturas de estado sin efectos secundarios.
+
+### Limitaciones
+- La validación interactiva de la extensión instalada y del runner sigue pendiente; las pruebas automatizadas no la sustituyen.
+- No se garantiza coordinación entre ventanas, cancelación remota, identidad runtime por intento ni aislamiento remoto de repositorios de extremo a extremo. No se instalaron hooks reales ni se cambió la configuración de seguridad.
+
 ## [1.12.5] - 2026-10-20
 
 ### Added
