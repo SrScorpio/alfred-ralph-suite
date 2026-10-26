@@ -317,6 +317,17 @@ describe('safe catalog installer', () => {
     assert.strictEqual(await fs.readFile(markerPath, 'utf8'), previous);
   });
 
+  it('never restores a deleted managed resource with older bytes', async () => {
+    await run('2.0.0');
+    const previous = await fs.readFile(markerPath, 'utf8');
+    await fs.unlink(target(relative[0]));
+    await put(source(relative[0]), 'old pack');
+    const result: any = await run('1.12.6', true);
+    await assert.rejects(fs.readFile(target(relative[0]), 'utf8'));
+    assert.ok(result.warnings.some((warning: string) => warning.includes('DOWNGRADE_OR_UNKNOWN_VERSION')));
+    assert.strictEqual(result.agents, 0);
+    assert.strictEqual(await fs.readFile(markerPath, 'utf8'), previous);
+  });
   it('preserves extras and removed catalog members without invoking deletion APIs', async () => {
     await run();
     await put(target('skills/process/custom.txt'), 'extra');

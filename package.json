@@ -2,7 +2,7 @@
 	"name": "alfred-ralph-suite",
 	"displayName": "Alfred Ralph Suite",
 	"description": "Equipo de agentes Alfred Dev y tablero Ralph en una sola extensión: backlog, runner y quality gates sin dos instalaciones.",
-	"version": "1.12.7",
+	"version": "1.12.8",
 	"publisher": "SrScorpio",
 	"engines": {
 		"vscode": "^1.103.0"
@@ -75,6 +75,16 @@
 			{
 				"command": "ralph-suite.runTask",
 				"title": "Ralph: Run Next Task"
+			},
+			{
+				"command": "ralph-suite.showHostChatDefaults",
+				"title": "%command.showHostChatDefaults.title%",
+				"category": "Ralph"
+			},
+			{
+				"command": "ralph-suite.openHostChatSettings",
+				"title": "%command.openHostChatSettings.title%",
+				"category": "Ralph"
 			},
 			{
 				"command": "ralph-suite.syncIssue",
@@ -161,6 +171,12 @@
 				},
 				{
 					"command": "ralph-suite.syncIssue"
+				},
+				{
+					"command": "ralph-suite.showHostChatDefaults"
+				},
+				{
+					"command": "ralph-suite.openHostChatSettings"
 				},
 				{
 					"command": "ralph-suite.setupProject"
@@ -500,8 +516,8 @@
 		"@types/mocha": "^10.0.0",
 		"@types/node": "^20.19.41",
 		"@types/vscode": "^1.103.0",
-		"@vscode/vsce": "^2.24.0",
-		"mocha": "^10.0.0",
+		"@vscode/vsce": "^4.0.0",
+		"mocha": "^12.0.3",
 		"ts-node": "^10.9.0",
 		"typescript": "^5.4.0"
 	}
