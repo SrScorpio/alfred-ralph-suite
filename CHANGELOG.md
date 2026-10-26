@@ -8,6 +8,21 @@ All notable changes to Ralph Suite are documented here.
 
 - Nada pendiente.
 
+## [1.12.8] - 2026-10-26
+
+### Added
+- Guia y consulta de defaults globales del chat (PR #34, ADR-022 opcion C): lectura en solo lectura de las cuatro opciones permitidas del host y navegacion a sus ajustes oficiales, protegidos por workspace trust y con sanitizacion de texto. No sustituye las APIs de sesion del ADR-019.
+
+### Fixed
+- La guarda de downgrade del catalogo aplica tambien cuando falta el destino con estado gestionado conocido; antes publicaba los bytes suministrados sin comprobar la version registrada. Test de regresion incluido.
+
+### Security
+- Dependencias de desarrollo: `npm audit fix` sin breaking y majors aprobadas `mocha@^12.0.3` y `@vscode/vsce@^4.0.0`; empaquetado validado con vsce 4. Avisos de auditoria: de 14 (8 high) a 2 high residuales.
+- Residual documentado: `@azure/msal-node` (GHSA-xcx6-jx8p-x3h5) requiere 7.0.3, solo alcanzable con releases upstream (identity 5 / vsce futuro); el flujo afectado es el login interactivo de `vsce publish`, no el runtime ni CI.
+
+### Tests
+- Suite: 413 passing sobre mocha 12; empaquetado vsce 4 verificado.
+
 ## [1.12.7] - 2026-10-24
 
 ### Fixed
