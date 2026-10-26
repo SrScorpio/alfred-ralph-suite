@@ -77,6 +77,16 @@
 				"title": "Ralph: Run Next Task"
 			},
 			{
+				"command": "ralph-suite.showHostChatDefaults",
+				"title": "%command.showHostChatDefaults.title%",
+				"category": "Ralph"
+			},
+			{
+				"command": "ralph-suite.openHostChatSettings",
+				"title": "%command.openHostChatSettings.title%",
+				"category": "Ralph"
+			},
+			{
 				"command": "ralph-suite.syncIssue",
 				"title": "%command.syncIssue.title%"
 			},
@@ -161,6 +171,12 @@
 				},
 				{
 					"command": "ralph-suite.syncIssue"
+				},
+				{
+					"command": "ralph-suite.showHostChatDefaults"
+				},
+				{
+					"command": "ralph-suite.openHostChatSettings"
 				},
 				{
 					"command": "ralph-suite.setupProject"
