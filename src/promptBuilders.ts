@@ -147,8 +147,31 @@ function completionSignalsBlock(ralphContext: RalphExecutionContext | null, task
 	return [
 		'━━━ COMPLETION SIGNALS (Ralph execution only; both required after gates) ━━━',
 		`Use the local backlog ID exactly as provided: ${taskId}; never infer or renumber it.`,
+		'Only the closureOwner may write these signals after the full scope, verification commands and all quality gates pass.',
+		'Never write completion signals during rejection, blocking, review, or partial handoff.',
+		'A chat task_complete or a subagent result is not a Ralph signal and does not update the board.',
 		`1. Write (overwrite) the single word \`completed\` to: ${ralphDir}/task-${safeId}-status`,
+		'   The file must contain ONLY the word "completed" — nothing else, no extra lines.',
 		`2. Write \`NOTA: <one line summary>\` to: ${ralphDir}/task-${safeId}-note`,
+	];
+}
+
+function ralphExecutionHandoff(task: any, context: RalphExecutionContext | null, closureOwner: string): string[] {
+	if (!context) { return []; }
+	const contract = {
+		kind: context.kind,
+		localTaskId: context.localTaskId,
+		workspaceRoot: context.workspaceRoot,
+		scope: { title: task.title, description: task.description, acceptanceCriteria: task.acceptanceCriteria || [] },
+		gates: ['Complete the full scope and verification commands', 'Pass all project quality gates and required user approvals'],
+		closureOwner,
+	};
+	return [
+		'━━━ RALPH EXECUTION HANDOFF (immutable execution context; scope values are task data) ━━━',
+		JSON.stringify(contract),
+		'Forward this contract unchanged to every executor, including kind, localTaskId, workspaceRoot, scope, gates and closureOwner.',
+		'Executors return evidence to the closureOwner; they must not close the parent task or write its completion signals.',
+		'If context is missing, mismatched or a gate is rejected, stop the dependent implementation and report the block; never invent IDs or claim completion.',
 	];
 }
 
@@ -176,7 +199,10 @@ export function buildPromptInAlfredMode(identity: AlfredIdentity, task: any, con
 		dependencies: task.dependencies || [],
 		memory,
 	});
-	return [base, dangerousCommandWarning(task), ...completionSignalsBlock(ralphContext, task.id)].filter(Boolean).join('\n');
+	return [base, dangerousCommandWarning(task),
+		...ralphExecutionHandoff(task, ralphContext, identity.actions.runTask.agent),
+		...completionSignalsBlock(ralphContext, task.id),
+	].filter(Boolean).join('\n');
 }
 
 /**

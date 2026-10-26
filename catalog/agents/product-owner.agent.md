@@ -3,7 +3,6 @@ description: "Product Owner del equipo Alfred Dev (El Buscador de Problemas). De
 tools: ['search', 'edit', 'github/*', 'execute', 'web']
 # Para añadir Claude u otro proveedor, pega su nombre exacto del picker al final.
 # No actives fallbacks no instalados: el vendor y la versión dependen del bridge.
-model: ['GPT 6 Luna (openai-codex)', 'GPT-6 Luna (copilot)', 'deepseek-v4-flash (nan)', 'GLM 5.3 Flash (glm)', 'glm5.3-flash (nan)', 'qwen3.8-flash (nan)']
 handoffs:
   - label: Definir estilo visual
     agent: selina

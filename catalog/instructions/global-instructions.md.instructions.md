@@ -1,8 +1,24 @@
 ---
 applyTo: '**'
-description: 'Reglas globales de desarrollo. Cargar siempre: estilo, seguridad, rendimiento, estructura y estándares de código.'
+description: 'Reglas de desarrollo para flujos Alfred/Ralph: calidad, seguridad, continuidad y estándares subordinados al repositorio.'
 ---
 # Reglas de Desarrollo Globales
+
+## Alcance y autonomía
+- Estas reglas operan solo cuando se active un flujo Alfred/Ralph. No convierten
+  una consulta ad hoc en una ejecución del equipo ni en una tarea Ralph.
+- Manda el alcance autorizado y la política del repositorio. Investigar o revisar
+  no autoriza editar; implementar autoriza completar lo pedido con autonomía
+  proporcional, sin introducir fases, herramientas o entregas no solicitadas.
+- ODD mixto adopta prácticas de organización, no un framework externo ni una
+  persona. No impone Engram, `odd/tasks`, espejos de memoria ni commits automáticos.
+  Para trabajo sustancial usa el documento existente o la plantilla del equipo en
+  `docs/` cuando corresponda; el trabajo pequeño sigue inline (ADR-021).
+- Los commits requieren autorización conforme a la política del repositorio;
+  comprobar tests no autoriza commit, push, PR ni publicación.
+- Reconciliar el seguimiento existente no autoriza altas ni cambios de backlog.
+  No inventes una API de tablero: si falta una tarjeta necesaria, solicita una
+  operación UI autorizada al maintainer y bloquea solo el trabajo dependiente.
 
 ## Comunicación
 - Responder en español. Código, nombres de archivos, variables, funciones, commit messages y commit descriptions en inglés.
@@ -22,9 +38,9 @@ description: 'Reglas globales de desarrollo. Cargar siempre: estilo, seguridad, 
 	cambio, la evidencia mínima y la siguiente acción.
 - Los informes finales, veredictos, hallazgos, gates y evidencias conservan el
 	detalle exigido por el rol y se emiten una sola vez al cierre.
-- Las frases de personalidad son opcionales y no deben añadir relleno. Si una
-	regla local exige narración, prevalece esta política salvo excepciones de
-	seguridad, integridad, coste o aprobación explícita.
+- No imponer una personalidad ni protocolos de terceros. La política de
+  comunicación del repositorio prevalece; conserva los avisos necesarios de
+  seguridad, integridad, coste o aprobación explícita.
 - **Tools no se heredan.** Cada agente usa solo las de su frontmatter. En VS Code
   Copilot el tool set de comandos es `execute` (`execute/runInTerminal`). No
   existe la tool `terminal`. Un subagente sin `execute` no puede correr
@@ -43,9 +59,18 @@ description: 'Reglas globales de desarrollo. Cargar siempre: estilo, seguridad, 
   verifica; no lo edita. Ningún otro agente escribe el snapshot.
 - Tras cambiar un `.agent.md`, reseleccionar el agente o abrir un chat nuevo:
   las conversaciones abiertas no recargan la definición.
-- Delegar al agente, no al modelo: el receptor usa su array `model`. No uses
-  `handoffs.model`. Autopilot de VS Code no autoriza a saltar gates ni a
-  autoenviar handoffs (`send: false`).
+- Delegar al rol, no al modelo: el host selecciona el modelo; el catálogo no fija
+  proveedor ni preferencias automáticas por rol. No uses `handoffs.model`.
+  No sustituyas silenciosamente un rol no disponible por un agente genérico:
+  informa de la limitación y solicita un handoff explícito. No inventes herramientas.
+  Autopilot no autoriza a saltar gates ni a autoenviar handoffs (`send: false`).
+- En Ralph, transmite sin cambios el contrato del prompt (`kind`, `localTaskId`,
+  `workspaceRoot`, `scope`, `gates`, `closureOwner`) a cada ejecutor. Solo el
+  `closureOwner` cierra la tarea padre tras verificar todo el alcance y las gates;
+  los ejecutores devuelven evidencia, no señales. Sin contexto válido, en revisión,
+  rechazo, bloqueo o handoff parcial, no escribas señales runtime. `task_complete`
+  no registra una tarjeta ni sustituye `completed` y `NOTA:`. El trabajo ad hoc
+  no requiere inventar ID Ralph ni escribir `.ralph/`.
 
 ## Documentación y Estructura (Anti-Bloat)
 - ZERO documentación redundante: un solo source of truth por concepto.
@@ -89,7 +114,13 @@ description: 'Reglas globales de desarrollo. Cargar siempre: estilo, seguridad, 
 - SOLID y DRY donde reduzcan complejidad real, no como dogma: extraer duplicación evidente al tocar código, no abstraer por anticipado.
 - Seguir el linter/formatter del proyecto si está configurado; el estilo del proyecto manda sobre preferencias personales.
 - All code must be reviewed before merging into the main branch.
-- Always follow Test-Driven Development (TDD): write tests before implementing features or fixing bugs.
+- Test-first por defecto cuando exista un test determinista ejecutable y un
+  resultado esperado claro: RED → GREEN → REFACTOR. Si no existe, explicar la
+  excepción y realizar chequeos proporcionales. Features y fixes siempre llevan
+  tests; preservar los comandos y opciones existentes (ADR-021).
+- Delegar con un motivo concreto y conservar el rol; trabajo pequeño inline
+  cuando el rol lo permita. Review acotada al cambio o slice, no a checkboxes.
+  No añadir umbrales de líneas ni cadenas automáticas de PRs.
 
 ## Seguridad
 - Input sanitization en todo punto de entrada (API endpoints, forms, CLI args).
