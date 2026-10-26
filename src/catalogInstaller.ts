@@ -176,10 +176,11 @@ async function reconcile(resource: Resource, previous: ResourceState | undefined
   if (before) {
     if (before.hash === desired) return previous?.hash === desired ? previous : { hash: desired, version };
     if (!previous || before.hash !== previous.hash) { result.conflicts.push(target); return previous; }
-    if (!mayUpdate(previous.version, version) || (markerVersion && !mayUpdate(markerVersion, version))) {
-      result.warnings.push(`${target}: DOWNGRADE_OR_UNKNOWN_VERSION`);
-      return previous;
-    }
+  }
+  // A missing destination with known managed state still must not receive older bytes.
+  if (previous && (!mayUpdate(previous.version, version) || (markerVersion && !mayUpdate(markerVersion, version)))) {
+    result.warnings.push(`${target}: DOWNGRADE_OR_UNKNOWN_VERSION`);
+    return previous;
   }
   try {
     await publish(target, bytes, async () => {
