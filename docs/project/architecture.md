@@ -32,7 +32,7 @@ src/
   security/             — secretHook
   webview/              — kanbanHtml: HTML/JS del tablero con escape explícito (esc/escAttr)
 docs/
-  adr/                  — log de decisiones (ADR-016…ADR-018)
+  adr/                  — log de decisiones (ADR-016…ADR-022)
   project/              — architecture, threat-model, compliance, status (esta convención)
   ralph/prd.json        — backlog (fuente de verdad del backlog)
 .ralph/                 — runtime por tarea (logs y señales), gitignored
@@ -52,7 +52,9 @@ Vigentes:
 - **Dispatch paralelo (ADR-016):** solo `ralph-suite.syncIssue` (mapeo explícito `github:#N` / `owner/repo#N`, escribe solo `.ralph`, nunca `prd.json`). Runner serial; el paralelismo futuro exige un scheduler propiedad de Ralph con lease por tarea, concurrencia limitada, abort por tarea y recuperación idempotente.
 - **Reserva de ejecución Ralph (fase 1):** una reserva síncrona global por instancia de extensión cubre `runTask` manual y autorunner en todas las raíces del chat compartido; no coordina otras ventanas y no cancela el agente remoto. Un fallo inequívoco antes de `chat.open` libera la reserva; timeout, abort o parada tras iniciar el envío se considera estado desconocido, conserva la reserva y bloquea nuevos envíos/avance automático. Solo una recuperación explícita, tras pedir al usuario comprobar y detener el agente anterior, la libera; cancelar conserva el bloqueo. No hay reintentos automáticos de trabajo que pudo enviarse (`taskRetries` sigue siendo una opción compatible, pero no se usa para relanzar esos casos). Sin ID de intento en el protocolo runtime, una señal tardía tras recuperar sigue siendo indistinguible de la del intento nuevo.
 - **`modelProfiles` simplificado (ADR-017, supersede parcialmente ADR-007):** Ralph recomienda `engine`/`model`/`mode` con vocabulario propio (defaults `model: ""`, modos `execute|review`), inyectado en el prompt; sin router de Chat ni paleta Alfred.
+- **Continuidad Alfred ↔ Ralph (alineación ADR-018/019/020/021):** la identidad integrada enruta `runTask` a `alfred`; el DTO externo sigue decidiendo su propio rol y `alfredMode: off` conserva la ruta anterior. El prompt con contexto Ralph validado transmite un contrato inmutable (`kind`, `localTaskId`, `workspaceRoot`, `scope`, `gates`, `closureOwner`): cada ejecutor devuelve evidencia y solo el dueño de cierre del padre escribe ambas señales tras completar alcance y gates. La reconciliación previa consulta las fuentes actuales y el backlog configurado sin editarlo; un alta pendiente requiere UI y autorización del maintainer, no una API agéntica inexistente. El trabajo ad hoc independiente no inventa ID ni señales. Los doce perfiles del catálogo conservan sus roles y herramientas sin binding `model`; el host elige el modelo, sin preferencias automáticas por rol ni sustitución genérica silenciosa. Estas instrucciones guían al agente, no imponen enforcement determinista de su conducta ni de gates desde el host; `task_complete` no actualiza el tablero. No se añade bridge ni API de alta.
 - **Modo Alfred (ADR-018):** `ralph-suite.alfredMode` (`auto|off`) se lee por acción, sin caché. Detección por id de extensión + comando anunciado `alfred-dev.ralph.announceIdentity`; DTO fail-closed que solo acepta `agent`/`mention`/`preamble` (si trae `provider` o `model` se rechaza entero). Se silencia lo que compite con la identidad (guardrails, boundaries, agentRole/Stack/Project, engine/modelProfiles, checkpoints) y se conserva el protocolo y runtime Ralph. `AGENTS.md` tiene un solo dueño: en modo Alfred, `setupProject` queda bloqueado y no se escribe el paquete. Overrides de usuario con `/plan/` o `plans/`: aviso único por sesión, cero escrituras en `settings.json`.
+- **Defaults globales del chat (ADR-022, opción C):** consulta en solo lectura de las cuatro opciones permitidas del host (`chat.permissions.default`, `chat.tools.global.autoApprove`, `chat.newSession.defaultMode`, `chat.autopilot.advanced.enabled`) y navegación a sus ajustes oficiales (`ralph-suite.showHostChatDefaults` / `openHostChatSettings`), protegidos por workspace trust y con sanitización de texto. Registrar o cambiar defaults no sustituye las APIs de sesión aislada del ADR-019 (los hosts sin soporte se muestran como preferencia no aplicada).
 - **Modularización (ADR-014):** `extension.ts` solo activate/deactivate; la lógica vive en `activate.ts` y módulos por responsabilidad (`commands/`, `kanban/`, builders y managers). Base del layout actual.
 - **Perfiles agénticos y salud:** `inferTaskType` clasifica la tarea y `resolveAgentProfile` resuelve la recomendación; `healthScore.ts` (ADR-005) y `kanban/dependencyGraph.ts` (ADR-006) están implementados y expuestos en el tablero.
 - **Git checkpoint (ADR-004, opt-in):** `ralph-suite.gitCheckpoint` (default off) crea un commit con mensaje estándar y sin secretos antes de trabajos críticos; riesgo de commits automáticos auditado.
@@ -90,3 +92,41 @@ Superadas o no implementadas (heredadas de `plans/decisiones.md`; se conservan c
 - Ralph es independiente: no exige Alfred ni lee/escribe ajustes de otras extensiones (ADR-017, ADR-018).
 - Un solo dueño de `AGENTS.md` por workspace según el modo (ADR-018).
 - `docs/` es la única convención de documentación del proyecto.
+
+## Reconciliación conservadora del catálogo instalado
+
+`src/catalogInstaller.ts` mantiene el mecanismo existente de instalación al
+perfil, sin modificar ajustes, permisos ni autenticación del host. El marcador
+`.copilot/agents/.alfred-dev-catalog.json` registra `owner`, `version`,
+`catalogHash` (SHA-256 del inventario ordenado con hashes de bytes) y `resources`
+por ruta relativa del catálogo (`hash` y `version` del último recurso instalado
+correctamente). No contiene copias del contenido. La versión y el hash global
+solo avanzan si todo el catálogo se reconcilia; los éxitos individuales se
+registran también cuando otros recursos fallan. Se conserva el historial de
+recursos retirados, sin borrar sus ficheros ni extras locales.
+
+Cada activación relee los bytes reales: instala ausentes, adopta coincidencias
+exactas sin reescribir y actualiza únicamente si el destino coincide con su
+último hash gestionado. `force` reevalúa, no da permiso para sobrescribir.
+Divergencias se preservan y devuelven como conflictos con ruta; los errores
+producen avisos de ruta/código, nunca contenido. Versiones superiores detectadas
+no se degradan; versiones no comparables se tratan conservadoramente. Se
+rechazan enlaces simbólicos/junctions en las rutas y ancestros, nombres con
+traversal y destinos con enlaces duros múltiples. El marcador se publica mediante
+un fichero exclusivo adyacente y `rename`, sin `unlink` ni reintento destructivo;
+un fallo deja la instalación parcial explícita y puede dejar un `.pending`
+para inspección manual, sin declararlo marcador válido.
+
+**Migración legacy:** un marcador con solo versión (incluido `1.12.6`) no prueba
+la autoría de los bytes instalados. Solo se adopta un destino idéntico al nuevo
+catálogo; cualquier otro se preserva como conflicto, sin inferir el original,
+archivarlo ni convertirlo en gestionado. Una reconciliación local posterior con
+baseline verificado y respaldo es una operación explícita del operador, no una
+migración oculta del instalador. Conflictos y avisos se muestran en Output:
+Ralph Suite, incluso sin cambios. `changed` incluye instrucciones, plantillas y
+skills; el contador de skills cuenta directorios con ficheros escritos.
+
+Las instrucciones del producto aplican al flujo Alfred/Ralph, subordinadas al
+repositorio; ADR-021 adopta prácticas, no un framework, persona de terceros,
+memoria Engram ni automatización de commits. Los perfiles personales no forman
+parte del catálogo. Esta implementación no acredita gates de UI ni de host real.

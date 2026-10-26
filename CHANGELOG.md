@@ -6,7 +6,15 @@ All notable changes to Ralph Suite are documented here.
 
 ## [Unreleased]
 
-- Nada pendiente.
+### Added
+- Test de regresión del instalador del catálogo: tras borrar un recurso gestionado, una instalación con versión anterior no restaura bytes antiguos (aviso `DOWNGRADE_OR_UNKNOWN_VERSION` y marcador intacto).
+
+### Fixed
+- La guarda de downgrade del catálogo aplica también cuando falta el destino con estado gestionado conocido; antes publicaba los bytes suministrados sin comprobar la versión registrada.
+
+### Security
+- Dependencias de desarrollo actualizadas con `npm audit fix` (sin cambios breaking) y majors aprobadas `mocha@^12` y `@vscode/vsce@^4`: los avisos de auditoría bajan de 14 (8 high) a 2 (2 high). Suite 413 passing sobre mocha 12 y empaquetado validado con vsce 4.
+- Residual documentado: `@azure/msal-node` (GHSA-xcx6-jx8p-x3h5) requiere 7.0.3, pero la cadena `@vscode/vsce@4 → @azure/identity@4.x → msal-node@6.x` solo lo alcanzará con releases upstream (identity 5 / vsce futuro); forzarlo con overrides combinaría versiones no probadas. El flujo afectado es el login interactivo de `vsce publish`, no el runtime ni CI.
 
 ## [1.12.5] - 2026-10-20
 
